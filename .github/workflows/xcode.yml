@@ -25,7 +25,7 @@ jobs:
 
       - name: Build
         run: |
-          xcodebuild build-without-testing \
+          xcodebuild build \
             -project ZabbixMenuBar.xcodeproj \
             -scheme ZabbixMenuBar \
             -destination 'platform=macOS' \
