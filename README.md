@@ -86,6 +86,10 @@ let ollamaModel = "mistral:7b"
 3. Search for "Zabbix"
 4. Drag the widget to your desktop
 
+## Disclaimer
+
+This project is an independent, unofficial application and is not affiliated with, endorsed by, or connected to Zabbix SIA or the Zabbix project in any way. "Zabbix" is a registered trademark of Zabbix SIA. This application is a third-party tool that interfaces with the Zabbix API for personal monitoring purposes.
+
 ## License
 
 MIT License
