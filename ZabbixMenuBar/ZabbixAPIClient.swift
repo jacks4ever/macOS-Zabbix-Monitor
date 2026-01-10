@@ -407,7 +407,7 @@ class ZabbixAPIClient: ObservableObject {
     @Published var aiSummary: String = ""
 
     private var authToken: String?
-    private var lastProblemSignature: String = "" // Track problems to avoid regenerating AI summary
+    private var lastProblemCount: Int = -1 // Track problem count to avoid regenerating AI summary
     private var session: URLSession!
     private var sessionDelegate: ZabbixSessionDelegate!
     private var refreshTimer: Timer?
@@ -618,13 +618,10 @@ class ZabbixAPIClient: ObservableObject {
             widgetSeverityFilter.includes(severity: problem.severity)
         }
 
-        // Create a signature of filtered problems to detect changes (includes filter in signature)
-        let filterSignature = widgetSeverityFilter.enabledLevels.sorted().map { String($0) }.joined(separator: ",")
-        let currentSignature = filteredProblems.map { "\($0.eventid):\($0.name):\($0.severity)" }.joined(separator: "|") + "||" + filterSignature
-
-        // Only regenerate AI summary if filtered problems have changed
-        if currentSignature != lastProblemSignature {
-            lastProblemSignature = currentSignature
+        // Only regenerate AI summary if problem count has changed
+        let currentProblemCount = filteredProblems.count
+        if currentProblemCount != lastProblemCount {
+            lastProblemCount = currentProblemCount
 
             Task {
                 await generateAISummary(for: Array(filteredProblems))

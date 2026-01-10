@@ -139,11 +139,11 @@ struct ZabbixWidgetEntryView: View {
                         .font(.title3)
                 }
             } else {
-                HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("\(entry.problemCount)")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(maxSeverityColor)
-                    Text(entry.problemCount == 1 ? "Issue" : "Issues")
+                    Text(entry.problemCount == 1 ? "Problem" : "Problems")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -180,11 +180,11 @@ struct ZabbixWidgetEntryView: View {
                         Text("All Clear")
                     }
                 } else {
-                    HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text("\(entry.problemCount)")
                             .font(.system(size: 32, weight: .bold))
                             .foregroundColor(maxSeverityColor)
-                        Text(entry.problemCount == 1 ? "Issue" : "Issues")
+                        Text(entry.problemCount == 1 ? "Problem" : "Problems")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -261,7 +261,7 @@ struct ZabbixWidgetEntryView: View {
                             .font(.caption)
                             .foregroundColor(.green)
                     } else {
-                        Text("\(entry.problemCount) \(entry.problemCount == 1 ? "Issue" : "Issues")")
+                        Text("\(entry.problemCount) \(entry.problemCount == 1 ? "Problem" : "Problems")")
                             .font(.caption)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
