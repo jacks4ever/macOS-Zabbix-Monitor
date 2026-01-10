@@ -5,10 +5,18 @@ struct ZabbixMenuBarApp: App {
     @StateObject private var zabbixClient = ZabbixAPIClient()
 
     var body: some Scene {
-        MenuBarExtra("Zabbix", systemImage: "z.square.fill") {
+        MenuBarExtra {
             ZabbixStatusView()
                 .environmentObject(zabbixClient)
                 .frame(width: 400, height: 500)
+                .environment(\.colorScheme, .dark)
+        } label: {
+            Image(nsImage: {
+                let image = NSImage(systemSymbolName: "z.square.fill", accessibilityDescription: "Zabbix")!
+                image.isTemplate = true
+                let config = NSImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+                return image.withSymbolConfiguration(config)!
+            }())
         }
         .menuBarExtraStyle(.window)
 

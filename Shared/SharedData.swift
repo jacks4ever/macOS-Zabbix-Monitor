@@ -33,6 +33,34 @@ struct SharedProblem: Codable, Identifiable {
     }
 }
 
+// MARK: - Widget Severity Filter (shared between app and widget)
+
+struct WidgetSeverityFilter: Codable, Equatable {
+    var disaster: Bool = true
+    var high: Bool = true
+    var average: Bool = true
+    var warning: Bool = true
+    var information: Bool = false
+    var notClassified: Bool = false
+
+    /// Returns set of severity levels that are enabled for widget display
+    var enabledLevels: Set<Int> {
+        var levels = Set<Int>()
+        if disaster { levels.insert(5) }
+        if high { levels.insert(4) }
+        if average { levels.insert(3) }
+        if warning { levels.insert(2) }
+        if information { levels.insert(1) }
+        if notClassified { levels.insert(0) }
+        return levels
+    }
+
+    /// Check if a severity level is enabled
+    func includes(severity: Int) -> Bool {
+        enabledLevels.contains(severity)
+    }
+}
+
 struct SharedZabbixData: Codable {
     let problems: [SharedProblem]
     let totalProblemCount: Int
@@ -40,6 +68,34 @@ struct SharedZabbixData: Codable {
     let serverURL: String
     let isAuthenticated: Bool
     let aiSummary: String
+    let severityFilter: WidgetSeverityFilter
+
+    enum CodingKeys: String, CodingKey {
+        case problems, totalProblemCount, lastUpdate, serverURL, isAuthenticated, aiSummary, severityFilter
+    }
+
+    // Custom decoder for backwards compatibility - provides default severityFilter if missing
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        problems = try container.decode([SharedProblem].self, forKey: .problems)
+        totalProblemCount = try container.decode(Int.self, forKey: .totalProblemCount)
+        lastUpdate = try container.decode(Date.self, forKey: .lastUpdate)
+        serverURL = try container.decode(String.self, forKey: .serverURL)
+        isAuthenticated = try container.decode(Bool.self, forKey: .isAuthenticated)
+        aiSummary = try container.decode(String.self, forKey: .aiSummary)
+        // Use default filter if not present (backwards compatibility)
+        severityFilter = try container.decodeIfPresent(WidgetSeverityFilter.self, forKey: .severityFilter) ?? WidgetSeverityFilter()
+    }
+
+    init(problems: [SharedProblem], totalProblemCount: Int, lastUpdate: Date, serverURL: String, isAuthenticated: Bool, aiSummary: String, severityFilter: WidgetSeverityFilter = WidgetSeverityFilter()) {
+        self.problems = problems
+        self.totalProblemCount = totalProblemCount
+        self.lastUpdate = lastUpdate
+        self.serverURL = serverURL
+        self.isAuthenticated = isAuthenticated
+        self.aiSummary = aiSummary
+        self.severityFilter = severityFilter
+    }
 
     static var empty: SharedZabbixData {
         SharedZabbixData(
@@ -48,7 +104,8 @@ struct SharedZabbixData: Codable {
             lastUpdate: Date(),
             serverURL: "",
             isAuthenticated: false,
-            aiSummary: ""
+            aiSummary: "",
+            severityFilter: WidgetSeverityFilter()
         )
     }
 }
@@ -62,20 +119,13 @@ class SharedDataManager {
 
     // Use UserDefaults with Team ID prefixed suite name (Sequoia format)
     private var sharedDefaults: UserDefaults? {
-        let defaults = UserDefaults(suiteName: userDefaultsSuite)
-        if defaults == nil {
-            print("ERROR: Could not create UserDefaults for suite: \(userDefaultsSuite)")
-        }
-        return defaults
+        UserDefaults(suiteName: userDefaultsSuite)
     }
 
     private init() {}
 
     func saveData(_ data: SharedZabbixData) {
-        guard let defaults = sharedDefaults else {
-            print("ERROR: Cannot access shared UserDefaults")
-            return
-        }
+        guard let defaults = sharedDefaults else { return }
 
         do {
             let encoder = JSONEncoder()
@@ -83,40 +133,29 @@ class SharedDataManager {
             let encoded = try encoder.encode(data)
             defaults.set(encoded, forKey: userDefaultsKey)
             defaults.synchronize()
-            print("Saved widget data to UserDefaults suite: \(userDefaultsSuite)")
-            print("  - Problems: \(data.totalProblemCount), Authenticated: \(data.isAuthenticated)")
 
             // Reload widget timeline on main thread
             #if canImport(WidgetKit)
             DispatchQueue.main.async {
                 WidgetCenter.shared.reloadAllTimelines()
-                print("Triggered widget timeline reload")
             }
             #endif
         } catch {
-            print("ERROR: Failed to save widget data: \(error)")
+            // Silently fail - widget will use stale data
         }
     }
 
     func loadData() -> SharedZabbixData {
-        guard let defaults = sharedDefaults else {
-            print("ERROR: Cannot access shared UserDefaults")
-            return .empty
-        }
-
-        guard let data = defaults.data(forKey: userDefaultsKey) else {
-            print("No data in UserDefaults for key: \(userDefaultsKey)")
+        guard let defaults = sharedDefaults,
+              let data = defaults.data(forKey: userDefaultsKey) else {
             return .empty
         }
 
         do {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
-            let decoded = try decoder.decode(SharedZabbixData.self, from: data)
-            print("Loaded widget data from UserDefaults: \(decoded.totalProblemCount) problems")
-            return decoded
+            return try decoder.decode(SharedZabbixData.self, from: data)
         } catch {
-            print("ERROR: Failed to load widget data: \(error)")
             return .empty
         }
     }

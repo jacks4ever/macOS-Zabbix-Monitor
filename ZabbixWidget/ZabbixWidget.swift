@@ -27,20 +27,17 @@ struct ZabbixProvider: TimelineProvider {
     private func loadEntry() -> ZabbixEntry {
         // Try to load from shared data
         let data = SharedDataManager.shared.loadData()
-
-        // Debug: Check if we got any data
         let hasData = !data.serverURL.isEmpty
-        print("Widget loadEntry - hasData: \(hasData), serverURL: \(data.serverURL), problems: \(data.totalProblemCount), aiSummary: \(data.aiSummary)")
 
         if hasData {
-            // Filter to only High (4) and Disaster (5) severity problems
-            let highSeverityProblems = data.problems.filter { $0.severity >= 4 }
-            let problems = highSeverityProblems.map { p in
+            // Filter problems based on user's severity filter settings
+            let filteredProblems = data.problems.filter { data.severityFilter.includes(severity: $0.severity) }
+            let problems = filteredProblems.map { p in
                 WidgetProblem(id: p.eventid, name: p.name, severity: p.severity)
             }
             return ZabbixEntry(
                 date: Date(),
-                problemCount: highSeverityProblems.count,
+                problemCount: filteredProblems.count,
                 problems: problems,
                 aiSummary: data.aiSummary,
                 isConfigured: true
@@ -116,6 +113,7 @@ struct ZabbixWidgetEntryView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: "z.square.fill")
+                    .font(.system(size: 28))
                     .foregroundColor(.red)
                 Text("Zabbix")
                     .font(.headline)
@@ -134,37 +132,20 @@ struct ZabbixWidgetEntryView: View {
                 }
                 .frame(maxWidth: .infinity)
             } else if entry.problemCount == 0 {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        Text("All Clear")
-                            .font(.title3)
-                    }
-                    if !entry.aiSummary.isEmpty {
-                        Text(entry.aiSummary)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text("All Clear")
+                        .font(.title3)
                 }
             } else {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("\(entry.problemCount)")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundColor(maxSeverityColor)
-                        Text(entry.problemCount == 1 ? "Issue" : "Issues")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    if !entry.aiSummary.isEmpty {
-                        Text(entry.aiSummary)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(3)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                HStack(alignment: .firstTextBaseline) {
+                    Text("\(entry.problemCount)")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(maxSeverityColor)
+                    Text(entry.problemCount == 1 ? "Issue" : "Issues")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
 
@@ -180,6 +161,7 @@ struct ZabbixWidgetEntryView: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Image(systemName: "z.square.fill")
+                        .font(.system(size: 28))
                         .foregroundColor(.red)
                     Text("Zabbix")
                         .font(.headline)
@@ -211,17 +193,49 @@ struct ZabbixWidgetEntryView: View {
                 Spacer()
             }
 
-            if entry.isConfigured && !entry.aiSummary.isEmpty {
+            if entry.isConfigured && entry.problemCount > 0 {
                 Divider()
 
-                VStack(alignment: .leading, spacing: 6) {
+                if !entry.aiSummary.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("AI Summary")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+                        Text(entry.aiSummary)
+                            .font(.caption2)
+                            .minimumScaleFactor(0.8)
+                    }
+                } else {
+                    // Show problem list when AI is disabled
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Active Problems")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+                        ForEach(entry.problems.prefix(3)) { problem in
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(problem.color)
+                                    .frame(width: 6, height: 6)
+                                Text(problem.name)
+                                    .font(.caption2)
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                }
+            } else if entry.isConfigured && !entry.aiSummary.isEmpty {
+                Divider()
+
+                VStack(alignment: .leading, spacing: 4) {
                     Text("AI Summary")
-                        .font(.caption)
+                        .font(.caption2)
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
                     Text(entry.aiSummary)
-                        .font(.caption)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .font(.caption2)
+                        .minimumScaleFactor(0.8)
                 }
             }
         }
@@ -234,6 +248,7 @@ struct ZabbixWidgetEntryView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "z.square.fill")
+                    .font(.system(size: 28))
                     .foregroundColor(.red)
                 Text("Zabbix Monitor")
                     .font(.headline)
@@ -274,28 +289,53 @@ struct ZabbixWidgetEntryView: View {
                 }
                 Spacer()
             } else {
-                // AI Summary section
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("AI Analysis")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.secondary)
+                if !entry.aiSummary.isEmpty {
+                    // AI Summary section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("AI Analysis")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
 
-                    if !entry.aiSummary.isEmpty {
                         Text(entry.aiSummary)
                             .font(.body)
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else if entry.problemCount == 0 {
+                            .minimumScaleFactor(0.8)
+                    }
+                } else if entry.problemCount == 0 {
+                    // No problems, no AI
+                    VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
-                            Text("All systems operational - no critical issues detected.")
+                            Text("All systems operational")
                                 .font(.body)
                         }
-                    } else {
-                        Text("Generating summary...")
-                            .font(.body)
+                    }
+                } else {
+                    // Problems exist, AI is disabled - show problem list
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Active Problems")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
                             .foregroundColor(.secondary)
+
+                        ForEach(entry.problems.prefix(5)) { problem in
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(problem.color)
+                                    .frame(width: 8, height: 8)
+                                Text(problem.name)
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                Spacer()
+                            }
+                        }
+
+                        if entry.problems.count > 5 {
+                            Text("+ \(entry.problems.count - 5) more...")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
 
@@ -306,7 +346,18 @@ struct ZabbixWidgetEntryView: View {
     }
 
     var maxSeverityColor: Color {
-        entry.problems.map { $0.color }.first ?? .blue
+        // Find the highest severity problem and return its color
+        guard let maxSeverity = entry.problems.map({ $0.severity }).max() else {
+            return .blue
+        }
+        switch maxSeverity {
+        case 5: return .purple
+        case 4: return .red
+        case 3: return .orange
+        case 2: return .yellow
+        case 1: return .blue
+        default: return .gray
+        }
     }
 }
 

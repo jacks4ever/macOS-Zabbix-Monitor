@@ -104,16 +104,136 @@ struct AcknowledgeResult: Decodable {
     let eventids: [Int]?
 }
 
+// MARK: - Problem Sort Order
+
+enum ProblemSortOrder: String, CaseIterable, Codable {
+    case criticality = "criticality"
+    case latest = "latest"
+    case alphabetical = "alphabetical"
+
+    var displayName: String {
+        switch self {
+        case .criticality: return "Criticality"
+        case .latest: return "Latest"
+        case .alphabetical: return "Alphabetical"
+        }
+    }
+}
+
+// MARK: - Severity Filter
+
+struct SeverityFilter: Codable, Equatable {
+    var disaster: Bool = true
+    var high: Bool = true
+    var average: Bool = true
+    var warning: Bool = true
+    var information: Bool = false
+    var notClassified: Bool = false
+
+    /// Returns array of severity levels that are enabled
+    var enabledLevels: Set<Int> {
+        var levels = Set<Int>()
+        if disaster { levels.insert(5) }
+        if high { levels.insert(4) }
+        if average { levels.insert(3) }
+        if warning { levels.insert(2) }
+        if information { levels.insert(1) }
+        if notClassified { levels.insert(0) }
+        return levels
+    }
+
+    /// Check if a severity level is enabled
+    func includes(severity: Int) -> Bool {
+        enabledLevels.contains(severity)
+    }
+}
+
+// MARK: - AI Provider Types
+
+enum AIProvider: String, CaseIterable, Codable {
+    case disabled = "disabled"
+    case ollama = "ollama"
+    case openai = "openai"
+    case anthropic = "anthropic"
+
+    var displayName: String {
+        switch self {
+        case .disabled: return "Disabled"
+        case .ollama: return "Ollama (Local)"
+        case .openai: return "OpenAI"
+        case .anthropic: return "Anthropic"
+        }
+    }
+
+    var requiresAPIKey: Bool {
+        switch self {
+        case .disabled, .ollama: return false
+        case .openai, .anthropic: return true
+        }
+    }
+}
+
 // MARK: - Ollama API Models
 
 struct OllamaRequest: Encodable {
     let model: String
     let prompt: String
     let stream: Bool
+    let options: OllamaOptions?
+}
+
+struct OllamaOptions: Encodable {
+    let num_predict: Int  // Max tokens to generate
 }
 
 struct OllamaResponse: Decodable {
     let response: String
+}
+
+// MARK: - OpenAI API Models
+
+struct OpenAIRequest: Encodable {
+    let model: String
+    let messages: [OpenAIMessage]
+    let max_tokens: Int
+}
+
+struct OpenAIMessage: Encodable {
+    let role: String
+    let content: String
+}
+
+struct OpenAIResponse: Decodable {
+    let choices: [OpenAIChoice]
+}
+
+struct OpenAIChoice: Decodable {
+    let message: OpenAIMessageResponse
+}
+
+struct OpenAIMessageResponse: Decodable {
+    let content: String
+}
+
+// MARK: - Anthropic API Models
+
+struct AnthropicRequest: Encodable {
+    let model: String
+    let max_tokens: Int
+    let messages: [AnthropicMessage]
+}
+
+struct AnthropicMessage: Encodable {
+    let role: String
+    let content: String
+}
+
+struct AnthropicResponse: Decodable {
+    let content: [AnthropicContent]
+}
+
+struct AnthropicContent: Decodable {
+    let text: String
 }
 
 // MARK: - Session Delegate for Self-Signed Certs
@@ -226,8 +346,34 @@ class ZabbixAPIClient: ObservableObject {
             setupSession()
         }
     }
+    @Published var problemSortOrder: ProblemSortOrder {
+        didSet {
+            UserDefaults.standard.set(problemSortOrder.rawValue, forKey: "problem_sort_order")
+        }
+    }
+    @Published var severityFilter: SeverityFilter {
+        didSet {
+            if let data = try? JSONEncoder().encode(severityFilter) {
+                UserDefaults.standard.set(data, forKey: "severity_filter")
+            }
+        }
+    }
+    @Published var widgetSeverityFilter: WidgetSeverityFilter {
+        didSet {
+            if let data = try? JSONEncoder().encode(widgetSeverityFilter) {
+                UserDefaults.standard.set(data, forKey: "widget_severity_filter")
+            }
+            // Save data immediately with new filter (don't wait for full refresh)
+            saveDataForWidget()
+        }
+    }
 
-    // Ollama Configuration
+    // AI Configuration
+    @Published var aiProvider: AIProvider {
+        didSet {
+            UserDefaults.standard.set(aiProvider.rawValue, forKey: "ai_provider")
+        }
+    }
     @Published var ollamaURL: String {
         didSet {
             UserDefaults.standard.set(ollamaURL, forKey: "ollama_url")
@@ -236,6 +382,26 @@ class ZabbixAPIClient: ObservableObject {
     @Published var ollamaModel: String {
         didSet {
             UserDefaults.standard.set(ollamaModel, forKey: "ollama_model")
+        }
+    }
+    @Published var openAIAPIKey: String {
+        didSet {
+            UserDefaults.standard.set(openAIAPIKey, forKey: "openai_api_key")
+        }
+    }
+    @Published var openAIModel: String {
+        didSet {
+            UserDefaults.standard.set(openAIModel, forKey: "openai_model")
+        }
+    }
+    @Published var anthropicAPIKey: String {
+        didSet {
+            UserDefaults.standard.set(anthropicAPIKey, forKey: "anthropic_api_key")
+        }
+    }
+    @Published var anthropicModel: String {
+        didSet {
+            UserDefaults.standard.set(anthropicModel, forKey: "anthropic_model")
         }
     }
     @Published var aiSummary: String = ""
@@ -254,8 +420,34 @@ class ZabbixAPIClient: ObservableObject {
         self.username = UserDefaults.standard.string(forKey: "zabbix_username") ?? ""
         self._refreshInterval = Published(initialValue: savedRefreshInterval == 0 ? 60 : savedRefreshInterval)
         self.allowSelfSignedCerts = UserDefaults.standard.object(forKey: "zabbix_allow_self_signed") as? Bool ?? true
+        let savedSortOrder = UserDefaults.standard.string(forKey: "problem_sort_order") ?? "criticality"
+        self.problemSortOrder = ProblemSortOrder(rawValue: savedSortOrder) ?? .criticality
+
+        // Severity Filter (menu bar app)
+        if let filterData = UserDefaults.standard.data(forKey: "severity_filter"),
+           let savedFilter = try? JSONDecoder().decode(SeverityFilter.self, from: filterData) {
+            self.severityFilter = savedFilter
+        } else {
+            self.severityFilter = SeverityFilter()
+        }
+
+        // Widget Severity Filter
+        if let filterData = UserDefaults.standard.data(forKey: "widget_severity_filter"),
+           let savedFilter = try? JSONDecoder().decode(WidgetSeverityFilter.self, from: filterData) {
+            self.widgetSeverityFilter = savedFilter
+        } else {
+            self.widgetSeverityFilter = WidgetSeverityFilter()
+        }
+
+        // AI Configuration
+        let savedProvider = UserDefaults.standard.string(forKey: "ai_provider") ?? "ollama"
+        self.aiProvider = AIProvider(rawValue: savedProvider) ?? .ollama
         self.ollamaURL = UserDefaults.standard.string(forKey: "ollama_url") ?? "http://192.168.200.246:11434"
         self.ollamaModel = UserDefaults.standard.string(forKey: "ollama_model") ?? "mistral:7b"
+        self.openAIAPIKey = UserDefaults.standard.string(forKey: "openai_api_key") ?? ""
+        self.openAIModel = UserDefaults.standard.string(forKey: "openai_model") ?? "gpt-4o-mini"
+        self.anthropicAPIKey = UserDefaults.standard.string(forKey: "anthropic_api_key") ?? ""
+        self.anthropicModel = UserDefaults.standard.string(forKey: "anthropic_model") ?? "claude-3-5-haiku-latest"
 
         setupSession()
 
@@ -409,9 +601,9 @@ class ZabbixAPIClient: ObservableObject {
     }
 
     private func saveDataForWidget() {
-        // Filter to only High (4) and Disaster (5) severity, then take top 10
-        let highSeverityProblems = problems.filter { (Int($0.severity) ?? 0) >= 4 }
-        let sharedProblems = highSeverityProblems.prefix(10).map { problem in
+        // Send all problems to widget, take top 20 for widget display
+        // Widget will filter based on its own severity filter settings
+        let sharedProblems = problems.prefix(20).map { problem in
             SharedProblem(
                 eventid: problem.eventid,
                 name: problem.name,
@@ -421,67 +613,40 @@ class ZabbixAPIClient: ObservableObject {
             )
         }
 
-        // Create a signature of current problems to detect changes
-        let currentSignature = sharedProblems.map { "\($0.eventid):\($0.name):\($0.severity)" }.joined(separator: "|")
+        // Filter problems by widget severity filter for AI summary
+        let filteredProblems = sharedProblems.filter { problem in
+            widgetSeverityFilter.includes(severity: problem.severity)
+        }
 
-        // Only regenerate AI summary if problems have changed
+        // Create a signature of filtered problems to detect changes (includes filter in signature)
+        let filterSignature = widgetSeverityFilter.enabledLevels.sorted().map { String($0) }.joined(separator: ",")
+        let currentSignature = filteredProblems.map { "\($0.eventid):\($0.name):\($0.severity)" }.joined(separator: "|") + "||" + filterSignature
+
+        // Only regenerate AI summary if filtered problems have changed
         if currentSignature != lastProblemSignature {
             lastProblemSignature = currentSignature
 
             Task {
-                await generateAISummary(for: Array(sharedProblems))
+                await generateAISummary(for: Array(filteredProblems))
             }
         } else {
             // Still save data to update timestamp, but use existing AI summary
             let sharedData = SharedZabbixData(
                 problems: Array(sharedProblems),
-                totalProblemCount: highSeverityProblems.count,
+                totalProblemCount: problems.count,
                 lastUpdate: lastRefresh ?? Date(),
                 serverURL: serverURL,
                 isAuthenticated: isAuthenticated,
-                aiSummary: aiSummary
+                aiSummary: aiSummary,
+                severityFilter: widgetSeverityFilter
             )
             SharedDataManager.shared.saveData(sharedData)
         }
     }
 
     private func generateAISummary(for problems: [SharedProblem]) async {
-        // If no problems, set a default message
-        if problems.isEmpty {
-            aiSummary = "All systems operational - no critical issues detected."
-            // Update shared data with the summary
-            let sharedData = SharedZabbixData(
-                problems: [],
-                totalProblemCount: 0,
-                lastUpdate: lastRefresh ?? Date(),
-                serverURL: serverURL,
-                isAuthenticated: isAuthenticated,
-                aiSummary: aiSummary
-            )
-            SharedDataManager.shared.saveData(sharedData)
-            return
-        }
-
-        // Build problem list for the prompt
-        let problemList = problems.map { p in
-            let severityName = p.severityName
-            return "- \(p.name) (Severity: \(severityName))"
-        }.joined(separator: "\n")
-
-        let prompt = """
-        You are a network analyst. Summarize these Zabbix monitoring alerts in ONE concise sentence.
-        Explain what the problems are and suggest what action might be needed.
-        Be direct and helpful. Do not use phrases like "Based on the alerts" - just state the summary.
-
-        Current alerts:
-        \(problemList)
-
-        One sentence summary:
-        """
-
-        // Get the problems data ready first
-        let highSeverityProblems = self.problems.filter { (Int($0.severity) ?? 0) >= 4 }
-        let sharedProblems = highSeverityProblems.prefix(10).map { problem in
+        // Get all problems for widget (top 20)
+        let sharedProblems = self.problems.prefix(20).map { problem in
             SharedProblem(
                 eventid: problem.eventid,
                 name: problem.name,
@@ -491,8 +656,61 @@ class ZabbixAPIClient: ObservableObject {
             )
         }
 
+        // If AI is disabled, clear the summary so widget shows raw problems
+        if aiProvider == .disabled {
+            aiSummary = ""
+            let sharedData = SharedZabbixData(
+                problems: Array(sharedProblems),
+                totalProblemCount: self.problems.count,
+                lastUpdate: lastRefresh ?? Date(),
+                serverURL: serverURL,
+                isAuthenticated: isAuthenticated,
+                aiSummary: "",
+                severityFilter: widgetSeverityFilter
+            )
+            SharedDataManager.shared.saveData(sharedData)
+            return
+        }
+
+        // If no problems, set a default message
+        if problems.isEmpty {
+            aiSummary = "All systems operational - no critical issues detected."
+            let sharedData = SharedZabbixData(
+                problems: [],
+                totalProblemCount: 0,
+                lastUpdate: lastRefresh ?? Date(),
+                serverURL: serverURL,
+                isAuthenticated: isAuthenticated,
+                aiSummary: aiSummary,
+                severityFilter: widgetSeverityFilter
+            )
+            SharedDataManager.shared.saveData(sharedData)
+            return
+        }
+
+        // Group problems by severity for a compact summary
+        var severityCounts: [String: Int] = [:]
+        var topIssues: [String] = []
+
+        for p in problems {
+            severityCounts[p.severityName, default: 0] += 1
+            if topIssues.count < 3 && p.severity >= 3 {
+                topIssues.append(p.name)
+            }
+        }
+
+        // Build compact context (not individual items)
+        let countSummary = severityCounts.map { "\($0.value) \($0.key)" }.joined(separator: ", ")
+        let topIssuesSummary = topIssues.isEmpty ? "" : "Top issues: \(topIssues.joined(separator: "; "))"
+
+        let prompt = """
+        \(problems.count) alerts: \(countSummary). \(topIssuesSummary)
+
+        Summarize in 1-2 sentences max. What's affected and what to do. No lists.
+        """
+
         do {
-            let summary = try await callOllama(prompt: prompt)
+            let summary = try await callAIProvider(prompt: prompt)
             aiSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
         } catch {
             aiSummary = "Unable to generate summary"
@@ -501,13 +719,29 @@ class ZabbixAPIClient: ObservableObject {
         // Always save shared data (with or without AI summary)
         let sharedData = SharedZabbixData(
             problems: Array(sharedProblems),
-            totalProblemCount: highSeverityProblems.count,
+            totalProblemCount: self.problems.count,
             lastUpdate: lastRefresh ?? Date(),
             serverURL: serverURL,
             isAuthenticated: isAuthenticated,
-            aiSummary: aiSummary
+            aiSummary: aiSummary,
+            severityFilter: widgetSeverityFilter
         )
         SharedDataManager.shared.saveData(sharedData)
+    }
+
+    // MARK: - AI Provider Methods
+
+    private func callAIProvider(prompt: String) async throws -> String {
+        switch aiProvider {
+        case .disabled:
+            return ""
+        case .ollama:
+            return try await callOllama(prompt: prompt)
+        case .openai:
+            return try await callOpenAI(prompt: prompt)
+        case .anthropic:
+            return try await callAnthropic(prompt: prompt)
+        }
     }
 
     private func callOllama(prompt: String) async throws -> String {
@@ -520,7 +754,7 @@ class ZabbixAPIClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 60
 
-        let ollamaRequest = OllamaRequest(model: ollamaModel, prompt: prompt, stream: false)
+        let ollamaRequest = OllamaRequest(model: ollamaModel, prompt: prompt, stream: false, options: OllamaOptions(num_predict: 100))
         request.httpBody = try JSONEncoder().encode(ollamaRequest)
 
         let (data, response) = try await session.data(for: request)
@@ -531,6 +765,95 @@ class ZabbixAPIClient: ObservableObject {
 
         let ollamaResponse = try JSONDecoder().decode(OllamaResponse.self, from: data)
         return ollamaResponse.response
+    }
+
+    private func callOpenAI(prompt: String) async throws -> String {
+        guard !openAIAPIKey.isEmpty else {
+            throw NSError(domain: "OpenAIError", code: -1, userInfo: [NSLocalizedDescriptionKey: "OpenAI API key not configured"])
+        }
+
+        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+            throw NSError(domain: "OpenAIError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid OpenAI URL"])
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(openAIAPIKey)", forHTTPHeaderField: "Authorization")
+        request.timeoutInterval = 60
+
+        let openAIRequest = OpenAIRequest(
+            model: openAIModel,
+            messages: [OpenAIMessage(role: "user", content: prompt)],
+            max_tokens: 100
+        )
+        request.httpBody = try JSONEncoder().encode(openAIRequest)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "OpenAIError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw NSError(domain: "OpenAIError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "OpenAI error: \(errorMessage)"])
+        }
+
+        let openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: data)
+        return openAIResponse.choices.first?.message.content ?? ""
+    }
+
+    private func callAnthropic(prompt: String) async throws -> String {
+        guard !anthropicAPIKey.isEmpty else {
+            throw NSError(domain: "AnthropicError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Anthropic API key not configured"])
+        }
+
+        guard let url = URL(string: "https://api.anthropic.com/v1/messages") else {
+            throw NSError(domain: "AnthropicError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid Anthropic URL"])
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anthropicAPIKey, forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        request.timeoutInterval = 60
+
+        let anthropicRequest = AnthropicRequest(
+            model: anthropicModel,
+            max_tokens: 100,
+            messages: [AnthropicMessage(role: "user", content: prompt)]
+        )
+        request.httpBody = try JSONEncoder().encode(anthropicRequest)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "AnthropicError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw NSError(domain: "AnthropicError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Anthropic error: \(errorMessage)"])
+        }
+
+        let anthropicResponse = try JSONDecoder().decode(AnthropicResponse.self, from: data)
+        return anthropicResponse.content.first?.text ?? ""
+    }
+
+    func testAIProvider() async -> (success: Bool, message: String) {
+        let testPrompt = "Say 'Hello' in exactly one word."
+
+        do {
+            let response = try await callAIProvider(prompt: testPrompt)
+            if response.isEmpty {
+                return (false, "Empty response from AI provider")
+            }
+            return (true, "Connected successfully")
+        } catch {
+            return (false, error.localizedDescription)
+        }
     }
 
     private func fetchProblems() async throws -> [ZabbixProblem] {
@@ -586,8 +909,7 @@ class ZabbixAPIClient: ObservableObject {
             "method": "host.get",
             "params": [
                 "output": ["hostid", "host", "name", "status"],
-                "sortfield": "name",
-                "limit": 100
+                "sortfield": "name"
             ],
             "id": 3
         ]

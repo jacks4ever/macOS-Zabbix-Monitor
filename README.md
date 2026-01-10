@@ -11,7 +11,12 @@ A macOS SwiftUI menu bar application for monitoring Zabbix server alerts with an
 - **Menu Bar App**: Displays real-time Zabbix problem count in the macOS menu bar
 - **Desktop Widget**: Shows high-severity alerts (High/Disaster) with multiple size options
 - **AI Summaries**: Uses local Ollama LLM to generate concise problem summaries
-- **Auto-Refresh**: Automatically fetches latest alerts at configurable intervals
+- **Auto-Refresh**: Configurable refresh intervals (5 seconds to 5 minutes)
+- **Host Monitoring**: View all hosts with problem count badges and severity indicators
+- **Problem Details**: Click on host problem badges to see detailed error information
+- **Flexible Sorting**: Sort hosts alphabetically or by problem severity (bidirectional)
+- **Severity Filtering**: Filter problems by severity level (Disaster, High, Average, Warning, Info)
+- **Custom Host Icons**: Assign custom SF Symbol icons to hosts for easy identification
 
 ## Screenshots
 
