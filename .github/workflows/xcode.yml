@@ -15,23 +15,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Default Scheme
-        run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
-          echo $default | cat >default
-          echo "Using default scheme: $default"
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Build
-        env:
-          scheme: ${{ 'ZabbixMenuBar' }}
         run: |
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          xcodebuild build-without-testing -scheme "$scheme" -destination 'platform=macOS' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+          xcodebuild build-without-testing \
+            -project ZabbixMenuBar.xcodeproj \
+            -scheme ZabbixMenuBar \
+            -destination 'platform=macOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM=""
 
       - name: Analyze
-        env:
-          scheme: ${{ 'ZabbixMenuBar' }}
         run: |
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          xcodebuild analyze -scheme "$scheme" -destination 'platform=macOS' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+          xcodebuild analyze \
+            -project ZabbixMenuBar.xcodeproj \
+            -scheme ZabbixMenuBar \
+            -destination 'platform=macOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM=""

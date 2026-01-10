@@ -20,7 +20,21 @@ jobs:
         run: swift --version
 
       - name: Build
-        run: xcodebuild build -scheme ZabbixMenuBar -destination 'platform=macOS' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        run: |
+          xcodebuild build \
+            -project ZabbixMenuBar.xcodeproj \
+            -scheme ZabbixMenuBar \
+            -destination 'platform=macOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM=""
 
       - name: Run Tests
-        run: xcodebuild test -scheme ZabbixMenuBar -destination 'platform=macOS' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO || echo "No tests configured"
+        run: |
+          xcodebuild test \
+            -project ZabbixMenuBar.xcodeproj \
+            -scheme ZabbixMenuBar \
+            -destination 'platform=macOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM="" || echo "No tests configured"
