@@ -112,9 +112,10 @@ struct ZabbixWidgetEntryView: View {
     var smallView: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Image(systemName: "z.square.fill")
-                    .font(.system(size: 28))
-                    .foregroundColor(.red)
+                Image("ZabbixIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
                 Text("Zabbix")
                     .font(.headline)
             }
@@ -160,9 +161,10 @@ struct ZabbixWidgetEntryView: View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Image(systemName: "z.square.fill")
-                        .font(.system(size: 28))
-                        .foregroundColor(.red)
+                    Image("ZabbixIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
                     Text("Zabbix")
                         .font(.headline)
                 }
@@ -247,9 +249,10 @@ struct ZabbixWidgetEntryView: View {
     var largeView: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Image(systemName: "z.square.fill")
-                    .font(.system(size: 28))
-                    .foregroundColor(.red)
+                Image("ZabbixIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
                 Text("Zabbix Monitor")
                     .font(.headline)
 

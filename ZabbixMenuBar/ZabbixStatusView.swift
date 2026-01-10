@@ -217,19 +217,10 @@ struct HeaderView: View {
         HStack(spacing: 10) {
             // App icon
             ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(
-                        LinearGradient(
-                            colors: [.red.opacity(0.9), .red],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                Image("ZabbixIcon")
+                    .resizable()
+                    .scaledToFit()
                     .frame(width: 28, height: 28)
-
-                Image(systemName: "z.square.fill")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.white)
             }
 
             VStack(alignment: .leading, spacing: 1) {

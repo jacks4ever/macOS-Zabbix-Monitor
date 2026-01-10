@@ -11,6 +11,12 @@ struct SettingsView: View {
                     Label("Connection", systemImage: "network")
                 }
 
+            FiltersSettingsView()
+                .environmentObject(client)
+                .tabItem {
+                    Label("Filters", systemImage: "line.3.horizontal.decrease.circle")
+                }
+
             SecuritySettingsView()
                 .environmentObject(client)
                 .tabItem {
@@ -81,171 +87,177 @@ struct ConnectionSettingsView: View {
     @State private var isTesting = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                // Server Configuration
-                GlassCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "Server", icon: "server.rack")
+        VStack(spacing: 16) {
+            // Server Configuration
+            GlassCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader(title: "Server", icon: "server.rack")
 
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Server URL")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            TextField("https://your-zabbix-server/api_jsonrpc.php", text: $client.serverURL)
-                                .textFieldStyle(.plain)
-                                .padding(8)
-                                .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .strokeBorder(.quaternary, lineWidth: 1)
-                                )
-                        }
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Username")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            TextField("Username", text: $client.username)
-                                .textFieldStyle(.plain)
-                                .padding(8)
-                                .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .strokeBorder(.quaternary, lineWidth: 1)
-                                )
-                        }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Server URL")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        TextField("https://your-zabbix-server/api_jsonrpc.php", text: $client.serverURL)
+                            .textFieldStyle(.plain)
+                            .padding(8)
+                            .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(.quaternary, lineWidth: 1)
+                            )
                     }
-                }
 
-                // Preferences
-                GlassCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "Preferences", icon: "gearshape")
-
-                        HStack {
-                            Text("Refresh Interval")
-                            Spacer()
-                            Picker("", selection: $client.refreshInterval) {
-                                Text("5 seconds").tag(5.0)
-                                Text("10 seconds").tag(10.0)
-                                Text("15 seconds").tag(15.0)
-                                Text("30 seconds").tag(30.0)
-                                Text("1 minute").tag(60.0)
-                                Text("5 minutes").tag(300.0)
-                                Text("Manual only").tag(0.0)
-                            }
-                            .pickerStyle(.menu)
-                            .frame(width: 140)
-                        }
-
-                        Divider().opacity(0.5)
-
-                        HStack {
-                            Text("Sort Problems By")
-                            Spacer()
-                            Picker("", selection: $client.problemSortOrder) {
-                                ForEach(ProblemSortOrder.allCases, id: \.self) { order in
-                                    Text(order.displayName).tag(order)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .frame(width: 140)
-                        }
-                    }
-                }
-
-                // Severity Filters
-                GlassCard {
-                    VStack(alignment: .leading, spacing: 16) {
-                        SectionHeader(title: "Severity Filters", icon: "line.3.horizontal.decrease.circle")
-
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Menu Bar")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-
-                            HStack(spacing: 8) {
-                                SeverityToggle(label: "Disaster", color: .purple, isOn: $client.severityFilter.disaster)
-                                SeverityToggle(label: "High", color: .red, isOn: $client.severityFilter.high)
-                                SeverityToggle(label: "Average", color: .orange, isOn: $client.severityFilter.average)
-                            }
-                            HStack(spacing: 8) {
-                                SeverityToggle(label: "Warning", color: .yellow, isOn: $client.severityFilter.warning)
-                                SeverityToggle(label: "Info", color: .blue, isOn: $client.severityFilter.information)
-                                SeverityToggle(label: "N/C", color: .gray, isOn: $client.severityFilter.notClassified)
-                            }
-                        }
-
-                        Divider().opacity(0.5)
-
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Widget")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-
-                            HStack(spacing: 8) {
-                                SeverityToggle(label: "Disaster", color: .purple, isOn: $client.widgetSeverityFilter.disaster)
-                                SeverityToggle(label: "High", color: .red, isOn: $client.widgetSeverityFilter.high)
-                                SeverityToggle(label: "Average", color: .orange, isOn: $client.widgetSeverityFilter.average)
-                            }
-                            HStack(spacing: 8) {
-                                SeverityToggle(label: "Warning", color: .yellow, isOn: $client.widgetSeverityFilter.warning)
-                                SeverityToggle(label: "Info", color: .blue, isOn: $client.widgetSeverityFilter.information)
-                                SeverityToggle(label: "N/C", color: .gray, isOn: $client.widgetSeverityFilter.notClassified)
-                            }
-                        }
-                    }
-                }
-
-                // Test Connection
-                GlassCard {
-                    HStack {
-                        if let result = testResult {
-                            HStack(spacing: 6) {
-                                Image(systemName: testSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                    .foregroundColor(testSuccess ? .green : .red)
-                                Text(result)
-                                    .font(.subheadline)
-                                    .lineLimit(1)
-                                    .truncationMode(.tail)
-                            }
-                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                        }
-
-                        Spacer()
-
-                        Button {
-                            isTesting = true
-                            Task {
-                                let result = await client.testConnection()
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    testSuccess = result.success
-                                    testResult = result.message
-                                }
-                                isTesting = false
-                            }
-                        } label: {
-                            HStack(spacing: 6) {
-                                if isTesting {
-                                    ProgressView()
-                                        .scaleEffect(0.7)
-                                        .frame(width: 14, height: 14)
-                                } else {
-                                    Image(systemName: "antenna.radiowaves.left.and.right")
-                                }
-                                Text("Test Connection")
-                            }
-                            .font(.subheadline.weight(.medium))
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.regular)
-                        .disabled(isTesting)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Username")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        TextField("Username", text: $client.username)
+                            .textFieldStyle(.plain)
+                            .padding(8)
+                            .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(.quaternary, lineWidth: 1)
+                            )
                     }
                 }
             }
-            .padding(20)
+
+            // Preferences
+            GlassCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader(title: "Preferences", icon: "gearshape")
+
+                    HStack {
+                        Text("Refresh Interval")
+                        Spacer()
+                        Picker("", selection: $client.refreshInterval) {
+                            Text("5 seconds").tag(5.0)
+                            Text("10 seconds").tag(10.0)
+                            Text("15 seconds").tag(15.0)
+                            Text("30 seconds").tag(30.0)
+                            Text("1 minute").tag(60.0)
+                            Text("5 minutes").tag(300.0)
+                            Text("Manual only").tag(0.0)
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 140)
+                    }
+
+                    Divider().opacity(0.5)
+
+                    HStack {
+                        Text("Sort Problems By")
+                        Spacer()
+                        Picker("", selection: $client.problemSortOrder) {
+                            ForEach(ProblemSortOrder.allCases, id: \.self) { order in
+                                Text(order.displayName).tag(order)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 140)
+                    }
+                }
+            }
+
+            // Test Connection
+            GlassCard {
+                HStack {
+                    if let result = testResult {
+                        HStack(spacing: 6) {
+                            Image(systemName: testSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundColor(testSuccess ? .green : .red)
+                            Text(result)
+                                .font(.subheadline)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    }
+
+                    Spacer()
+
+                    Button {
+                        isTesting = true
+                        Task {
+                            let result = await client.testConnection()
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                testSuccess = result.success
+                                testResult = result.message
+                            }
+                            isTesting = false
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            if isTesting {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                                    .frame(width: 14, height: 14)
+                            } else {
+                                Image(systemName: "antenna.radiowaves.left.and.right")
+                            }
+                            Text("Test Connection")
+                        }
+                        .font(.subheadline.weight(.medium))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.regular)
+                    .disabled(isTesting)
+                }
+            }
+
+            Spacer()
         }
+        .padding(20)
+    }
+}
+
+// MARK: - Filters Settings
+
+struct FiltersSettingsView: View {
+    @EnvironmentObject var client: ZabbixAPIClient
+
+    var body: some View {
+        VStack(spacing: 16) {
+            // Menu Bar Severity Filters
+            GlassCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader(title: "Menu Bar Severity", icon: "menubar.rectangle")
+
+                    HStack(spacing: 8) {
+                        SeverityToggle(label: "Disaster", color: .purple, isOn: $client.severityFilter.disaster)
+                        SeverityToggle(label: "High", color: .red, isOn: $client.severityFilter.high)
+                        SeverityToggle(label: "Average", color: .orange, isOn: $client.severityFilter.average)
+                    }
+                    HStack(spacing: 8) {
+                        SeverityToggle(label: "Warning", color: .yellow, isOn: $client.severityFilter.warning)
+                        SeverityToggle(label: "Info", color: .blue, isOn: $client.severityFilter.information)
+                        SeverityToggle(label: "N/C", color: .gray, isOn: $client.severityFilter.notClassified)
+                    }
+                }
+            }
+
+            // Widget Severity Filters
+            GlassCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader(title: "Widget Severity", icon: "widget.small")
+
+                    HStack(spacing: 8) {
+                        SeverityToggle(label: "Disaster", color: .purple, isOn: $client.widgetSeverityFilter.disaster)
+                        SeverityToggle(label: "High", color: .red, isOn: $client.widgetSeverityFilter.high)
+                        SeverityToggle(label: "Average", color: .orange, isOn: $client.widgetSeverityFilter.average)
+                    }
+                    HStack(spacing: 8) {
+                        SeverityToggle(label: "Warning", color: .yellow, isOn: $client.widgetSeverityFilter.warning)
+                        SeverityToggle(label: "Info", color: .blue, isOn: $client.widgetSeverityFilter.information)
+                        SeverityToggle(label: "N/C", color: .gray, isOn: $client.widgetSeverityFilter.notClassified)
+                    }
+                }
+            }
+
+            Spacer()
+        }
+        .padding(20)
     }
 }
 
@@ -585,22 +597,10 @@ struct AboutView: View {
 
             // App Icon and Title
             VStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(
-                            LinearGradient(
-                                colors: [.red.opacity(0.8), .red],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 80, height: 80)
-                        .shadow(color: .red.opacity(0.3), radius: 12, y: 6)
-
-                    Image(systemName: "z.square.fill")
-                        .font(.system(size: 44, weight: .bold))
-                        .foregroundStyle(.white)
-                }
+                Image("ZabbixIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
 
                 Text("Zabbix Menu Bar")
                     .font(.title)
