@@ -10,19 +10,26 @@ A macOS SwiftUI menu bar application for monitoring Zabbix server alerts with an
 
 - **Menu Bar App**: Displays real-time Zabbix problem count in the macOS menu bar
 - **Desktop Widget**: Shows high-severity alerts (High/Disaster) with multiple size options
-- **AI Summaries**: Uses local Ollama LLM to generate concise problem summaries
+- **AI Summaries**: Generate concise problem summaries using your choice of AI provider:
+  - Local Ollama LLM
+  - OpenAI (GPT-4, GPT-3.5)
+  - Anthropic (Claude)
+  - And more
 - **Auto-Refresh**: Configurable refresh intervals (5 seconds to 5 minutes)
 - **Host Monitoring**: View all hosts with problem count badges and severity indicators
+- **Smart Host Icons**: Automatic icon assignment based on host naming patterns (e.g., servers get server icons, routers get network icons), with manual override to select any SF Symbol
 - **Problem Details**: Click on host problem badges to see detailed error information
 - **Flexible Sorting**: Sort hosts alphabetically or by problem severity (bidirectional)
 - **Severity Filtering**: Filter problems by severity level (Disaster, High, Average, Warning, Info)
-- **Custom Host Icons**: Assign custom SF Symbol icons to hosts for easy identification
 
 ## Screenshots
 
 The menu bar icon shows the current problem count, color-coded by severity:
-- Red: Disaster-level problems
-- Orange: High-severity problems
+- Purple: Disaster (severity 5)
+- Red: High (severity 4)
+- Orange: Average (severity 3)
+- Yellow: Warning (severity 2)
+- Blue: Information (severity 1)
 - Green: No active problems
 
 ## Requirements
@@ -30,7 +37,7 @@ The menu bar icon shows the current problem count, color-coded by severity:
 - macOS Sequoia or later
 - Xcode 15+
 - A Zabbix server with API access
-- (Optional) Ollama server for AI summaries
+- (Optional) AI provider for summaries: Ollama (local), OpenAI, or Anthropic
 
 ## Installation
 
@@ -57,9 +64,11 @@ All settings are configurable through the app's Settings panel (accessible via t
 - **Username/Password**: Zabbix API credentials
 - **Refresh Interval**: How often to fetch updates (5 seconds to 5 minutes)
 - **Severity Filter**: Choose which severity levels to display
-- **AI Summaries**: Enable/disable Ollama integration
-- **Ollama Server URL**: Your Ollama server endpoint (e.g., `http://localhost:11434`)
-- **Ollama Model**: The model to use for AI summaries (e.g., `mistral:7b`)
+- **AI Provider**: Select your preferred AI service:
+  - Ollama (local) - self-hosted LLM
+  - OpenAI - GPT-4, GPT-3.5-turbo
+  - Anthropic - Claude models
+- **AI Settings**: Configure API keys, server URLs, and model selection
 
 ## Architecture
 
