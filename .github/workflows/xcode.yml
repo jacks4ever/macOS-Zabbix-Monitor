@@ -9,14 +9,17 @@ on:
 jobs:
   build:
     name: Build and analyse default scheme using xcodebuild command
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+
+      - name: Show Xcode Version
+        run: xcodebuild -version
 
       - name: Build
         run: |
@@ -24,9 +27,13 @@ jobs:
             -project ZabbixMenuBar.xcodeproj \
             -scheme ZabbixMenuBar \
             -destination 'platform=macOS' \
-            CODE_SIGN_IDENTITY="" \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            DEVELOPMENT_TEAM=""
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER=""
 
       - name: Analyze
         run: |
@@ -34,6 +41,10 @@ jobs:
             -project ZabbixMenuBar.xcodeproj \
             -scheme ZabbixMenuBar \
             -destination 'platform=macOS' \
-            CODE_SIGN_IDENTITY="" \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            DEVELOPMENT_TEAM=""
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER=""
