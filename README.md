@@ -45,22 +45,21 @@ The menu bar icon shows the current problem count, color-coded by severity:
    open ZabbixMenuBar.xcodeproj
    ```
 
-3. Update the configuration in `ZabbixAPIClient.swift` with your Zabbix server details
+3. Build and run (`Cmd+R`)
 
-4. Build and run (`Cmd+R`)
+4. Configure via the menu bar app's Settings
 
 ## Configuration
 
-Edit the following values in `ZabbixAPIClient.swift`:
+All settings are configurable through the app's Settings panel (accessible via the menu bar dropdown):
 
-```swift
-// Zabbix API endpoint
-let zabbixURL = "https://your-zabbix-server/api_jsonrpc.php"
-
-// Ollama server (optional, for AI summaries)
-let ollamaURL = "http://your-ollama-server:11434"
-let ollamaModel = "mistral:7b"
-```
+- **Zabbix Server URL**: Your Zabbix API endpoint (e.g., `https://your-zabbix-server/api_jsonrpc.php`)
+- **Username/Password**: Zabbix API credentials
+- **Refresh Interval**: How often to fetch updates (5 seconds to 5 minutes)
+- **Severity Filter**: Choose which severity levels to display
+- **AI Summaries**: Enable/disable Ollama integration
+- **Ollama Server URL**: Your Ollama server endpoint (e.g., `http://localhost:11434`)
+- **Ollama Model**: The model to use for AI summaries (e.g., `mistral:7b`)
 
 ## Architecture
 
