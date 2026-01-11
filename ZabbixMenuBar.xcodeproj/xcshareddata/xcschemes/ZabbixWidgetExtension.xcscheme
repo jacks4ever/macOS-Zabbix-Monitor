@@ -31,7 +31,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A1000001226F00040"
-               BuildableName = "ZabbixMenuBar.app"
+               BuildableName = "Zabbix Monitor.app"
                BlueprintName = "ZabbixMenuBar"
                ReferencedContainer = "container:ZabbixMenuBar.xcodeproj">
             </BuildableReference>
@@ -73,7 +73,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A1000001226F00040"
-            BuildableName = "ZabbixMenuBar.app"
+            BuildableName = "Zabbix Monitor.app"
             BlueprintName = "ZabbixMenuBar"
             ReferencedContainer = "container:ZabbixMenuBar.xcodeproj">
          </BuildableReference>
@@ -109,7 +109,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A1000001226F00040"
-            BuildableName = "ZabbixMenuBar.app"
+            BuildableName = "Zabbix Monitor.app"
             BlueprintName = "ZabbixMenuBar"
             ReferencedContainer = "container:ZabbixMenuBar.xcodeproj">
          </BuildableReference>

@@ -73,6 +73,17 @@ struct WidgetProblem: Identifiable {
         default: return .gray
         }
     }
+
+    var severityIcon: String {
+        switch severity {
+        case 5: return "exclamationmark.octagon.fill"  // Disaster
+        case 4: return "exclamationmark.triangle.fill" // High
+        case 3: return "exclamationmark.circle.fill"   // Average
+        case 2: return "info.circle.fill"              // Warning
+        case 1: return "info.circle"                   // Information
+        default: return "questionmark.circle"          // Not Classified
+        }
+    }
 }
 
 // MARK: - Timeline Entry
@@ -292,20 +303,8 @@ struct ZabbixWidgetEntryView: View {
                 }
                 Spacer()
             } else {
-                if !entry.aiSummary.isEmpty {
-                    // AI Summary section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("AI Analysis")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.secondary)
-
-                        Text(entry.aiSummary)
-                            .font(.body)
-                            .minimumScaleFactor(0.8)
-                    }
-                } else if entry.problemCount == 0 {
-                    // No problems, no AI
+                if entry.problemCount == 0 {
+                    // No problems
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
@@ -314,19 +313,38 @@ struct ZabbixWidgetEntryView: View {
                                 .font(.body)
                         }
                     }
+                    Spacer()
                 } else {
-                    // Problems exist, AI is disabled - show problem list
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Active Problems")
-                            .font(.subheadline)
+                    // Has problems - show AI summary if available, then problem list
+                    if !entry.aiSummary.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("AI Analysis")
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.secondary)
+
+                            Text(entry.aiSummary)
+                                .font(.caption)
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.8)
+                        }
+
+                        Divider()
+                    }
+
+                    // Always show top 5 problems with severity icons
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Top Problems")
+                            .font(.caption2)
                             .fontWeight(.semibold)
                             .foregroundColor(.secondary)
 
                         ForEach(entry.problems.prefix(5)) { problem in
-                            HStack(spacing: 8) {
-                                Circle()
-                                    .fill(problem.color)
-                                    .frame(width: 8, height: 8)
+                            HStack(spacing: 6) {
+                                Image(systemName: problem.severityIcon)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(problem.color)
+                                    .frame(width: 14)
                                 Text(problem.name)
                                     .font(.caption)
                                     .lineLimit(1)
@@ -336,13 +354,13 @@ struct ZabbixWidgetEntryView: View {
 
                         if entry.problems.count > 5 {
                             Text("+ \(entry.problems.count - 5) more...")
-                                .font(.caption)
+                                .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
                     }
-                }
 
-                Spacer()
+                    Spacer()
+                }
             }
         }
         .padding()
