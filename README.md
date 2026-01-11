@@ -53,6 +53,11 @@ A macOS SwiftUI menu bar application for monitoring Zabbix server alerts with an
 - **Self-Signed Certificates**: Optional support for local network servers with self-signed SSL
 - **Session Management**: Logout clears all saved credentials
 
+### Localization
+- **8 Languages Supported**: English, Spanish, French, German, Chinese (Simplified), Japanese, Latvian, and Russian
+- **Language Selection**: Choose your preferred language in Settings
+- **Full UI Translation**: All menus, settings, severity labels, and widget text are localized
+
 ## Screenshots
 
 The menu bar icon shows the current problem count, color-coded by severity:
@@ -119,9 +124,11 @@ All settings are configurable through the app's Settings panel (accessible via t
 ### Key Files
 - `ZabbixMenuBar/ZabbixAPIClient.swift` - Zabbix API client, AI provider integration, Keychain storage
 - `ZabbixMenuBar/ZabbixStatusView.swift` - Main UI with Problems/Hosts tabs, smart icon detection
-- `ZabbixMenuBar/SettingsView.swift` - Settings UI with Connection, Filters, Security, AI, and About tabs
+- `ZabbixMenuBar/SettingsView.swift` - Settings UI with Connection, Filters, Security, AI, Language, and About tabs
 - `ZabbixWidget/ZabbixWidget.swift` - Widget views (small, medium, large)
 - `Shared/SharedData.swift` - Data sharing between app and widget via App Groups
+- `Shared/AppLanguage.swift` - Language enum and manager for localization
+- `Shared/Localizable.xcstrings` - String Catalog with translations (8 languages)
 
 ## Adding the Widget
 
