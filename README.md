@@ -83,7 +83,7 @@ The menu bar icon shows the current problem count, color-coded by severity:
 
 ## Quick Start
 
-1. Download the [latest release](https://github.com/jacks4ever/macOS-Zabbix-Monitor/releases)
+1. Download the [latest release](https://github.com/jacks4ever/Zabbix-Monitor-for-macOS/releases)
 2. Move `Zabbix Monitor.app` to `/Applications`
 3. Launch and enter your Zabbix server URL (e.g., `https://zabbix.example.com/api_jsonrpc.php`)
 4. Login with your Zabbix credentials
@@ -101,12 +101,12 @@ If you prefer to build from source:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/jacks4ever/macOS-Zabbix-Monitor.git
+   git clone https://github.com/jacks4ever/Zabbix-Monitor-for-macOS.git
    ```
 
 2. Open the project in Xcode:
    ```bash
-   cd macOS-Zabbix-Monitor
+   cd Zabbix-Monitor-for-macOS
    open ZabbixMenuBar.xcodeproj
    ```
 
