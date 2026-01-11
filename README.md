@@ -1,4 +1,4 @@
-# macOS Zabbix Monitor
+# Zabbix Monitor for macOS
 
 **The first native macOS menu bar app for Zabbix monitoring.**
 
