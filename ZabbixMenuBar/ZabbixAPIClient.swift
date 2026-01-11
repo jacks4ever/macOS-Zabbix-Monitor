@@ -323,6 +323,9 @@ class ZabbixAPIClient: ObservableObject {
     @Published var isAuthenticated = false
     @Published var lastRefresh: Date?
 
+    /// Pause auto-refresh (e.g., when context menu is open)
+    var pauseRefresh = false
+
     // Configuration
     @Published var serverURL: String {
         didSet {
@@ -492,7 +495,8 @@ class ZabbixAPIClient: ObservableObject {
         // Create timer and add to common run loop mode for menu bar apps
         let timer = Timer(timeInterval: refreshInterval, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
-                await self?.refreshData()
+                guard let self = self, !self.pauseRefresh else { return }
+                await self.refreshData()
             }
         }
         RunLoop.main.add(timer, forMode: .common)

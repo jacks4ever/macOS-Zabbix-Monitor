@@ -68,21 +68,22 @@ struct ColoredToggleStyle: ToggleStyle {
         HStack {
             configuration.label
             Spacer()
-            Capsule()
-                .fill(configuration.isOn ? onColor : offColor)
-                .frame(width: 44, height: 24)
-                .overlay(
-                    Circle()
-                        .fill(.white)
-                        .shadow(radius: 1)
-                        .padding(2)
-                        .offset(x: configuration.isOn ? 10 : -10)
-                )
-                .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        configuration.isOn.toggle()
-                    }
+            ZStack {
+                Capsule()
+                    .fill(configuration.isOn ? onColor : offColor)
+                    .frame(width: 44, height: 24)
+
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .black.opacity(0.2), radius: 1, x: 0, y: 1)
+                    .frame(width: 20, height: 20)
+                    .offset(x: configuration.isOn ? 10 : -10)
+            }
+            .onTapGesture {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    configuration.isOn.toggle()
                 }
+            }
         }
     }
 }

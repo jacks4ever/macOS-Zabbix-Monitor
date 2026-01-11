@@ -13,71 +13,90 @@ class HostIconManager: ObservableObject {
         let name: String
         let icon: String
         let color: Color
+        let category: String
     }
 
-    static let availableIcons: [IconOption] = [
-        // Mobile
-        IconOption(name: "Phone", icon: "iphone", color: .blue),
-        IconOption(name: "Tablet", icon: "ipad", color: .blue),
-        IconOption(name: "Watch", icon: "applewatch", color: .blue),
-        // Amazon
-        IconOption(name: "Smart Speaker", icon: "homepod.fill", color: .cyan),
-        IconOption(name: "Smart Display", icon: "tv.fill", color: .cyan),
-        // Lighting
-        IconOption(name: "Light", icon: "lightbulb.fill", color: .yellow),
-        IconOption(name: "Holiday/Festive", icon: "sparkles", color: .yellow),
-        IconOption(name: "String Lights", icon: "party.popper.fill", color: .orange),
-        // Appliances
-        IconOption(name: "Washer", icon: "washer.fill", color: .gray),
-        IconOption(name: "Dryer", icon: "dryer.fill", color: .gray),
-        IconOption(name: "Dishwasher", icon: "dishwasher.fill", color: .gray),
-        IconOption(name: "Refrigerator", icon: "refrigerator.fill", color: .gray),
-        IconOption(name: "Oven", icon: "oven.fill", color: .gray),
-        IconOption(name: "Microwave", icon: "microwave.fill", color: .gray),
-        // Climate
-        IconOption(name: "Thermostat", icon: "thermometer.medium", color: .orange),
-        IconOption(name: "Air Conditioner", icon: "air.conditioner.horizontal.fill", color: .blue),
-        IconOption(name: "Heater", icon: "heater.vertical.fill", color: .orange),
-        IconOption(name: "Fan", icon: "fan.fill", color: .gray),
-        // Security
-        IconOption(name: "Doorbell", icon: "video.doorbell.fill", color: .red),
-        IconOption(name: "Camera", icon: "video.fill", color: .red),
-        IconOption(name: "Lock", icon: "lock.fill", color: .red),
-        IconOption(name: "Alarm", icon: "shield.fill", color: .red),
-        IconOption(name: "Sensor", icon: "sensor.fill", color: .red),
-        // Entertainment
-        IconOption(name: "TV", icon: "tv.fill", color: .purple),
-        IconOption(name: "Speaker", icon: "hifispeaker.fill", color: .purple),
-        IconOption(name: "Apple TV", icon: "appletv.fill", color: .purple),
-        IconOption(name: "Game Console", icon: "gamecontroller.fill", color: .green),
-        // Networking
-        IconOption(name: "Firewall", icon: "flame.fill", color: .orange),
-        IconOption(name: "Router", icon: "wifi.router.fill", color: .blue),
-        IconOption(name: "Access Point", icon: "wifi", color: .blue),
-        IconOption(name: "Switch", icon: "rectangle.connected.to.line.below", color: .blue),
-        IconOption(name: "NAS", icon: "externaldrive.fill", color: .blue),
-        IconOption(name: "Printer", icon: "printer.fill", color: .gray),
-        // Computers
-        IconOption(name: "Desktop", icon: "desktopcomputer", color: .gray),
-        IconOption(name: "Laptop", icon: "laptopcomputer", color: .gray),
-        // Smart Home
-        IconOption(name: "Home Assistant", icon: "house.fill", color: .cyan),
-        IconOption(name: "Smart Plug", icon: "powerplug.fill", color: .gray),
-        IconOption(name: "Blinds", icon: "blinds.vertical.closed", color: .gray),
-        IconOption(name: "Garage", icon: "door.garage.closed", color: .gray),
-        IconOption(name: "Sprinkler", icon: "sprinkler.and.droplets.fill", color: .green),
-        // Vehicles
-        IconOption(name: "Car", icon: "car.fill", color: .gray),
-        IconOption(name: "EV Charger", icon: "ev.charger.fill", color: .green),
-        // Infrastructure
-        IconOption(name: "Virtual Machine", icon: "cube.transparent", color: .indigo),
-        IconOption(name: "Server", icon: "server.rack", color: .indigo),
-        IconOption(name: "Database", icon: "cylinder.fill", color: .indigo),
-        IconOption(name: "Container", icon: "shippingbox.fill", color: .indigo),
-        IconOption(name: "Cloud", icon: "cloud.fill", color: .blue),
-        // Power
-        IconOption(name: "UPS/Battery", icon: "battery.100.bolt", color: .mint),
-        IconOption(name: "Solar", icon: "sun.max.fill", color: .mint),
+    struct IconCategory: Identifiable {
+        let id = UUID()
+        let name: String
+        let icon: String
+        var options: [IconOption]
+    }
+
+    static let iconCategories: [IconCategory] = [
+        IconCategory(name: "Appliances", icon: "refrigerator.fill", options: [
+            IconOption(name: "Dishwasher", icon: "dishwasher.fill", color: .gray, category: "Appliances"),
+            IconOption(name: "Dryer", icon: "dryer.fill", color: .gray, category: "Appliances"),
+            IconOption(name: "Microwave", icon: "microwave.fill", color: .gray, category: "Appliances"),
+            IconOption(name: "Oven", icon: "oven.fill", color: .gray, category: "Appliances"),
+            IconOption(name: "Refrigerator", icon: "refrigerator.fill", color: .gray, category: "Appliances"),
+            IconOption(name: "Washer", icon: "washer.fill", color: .gray, category: "Appliances"),
+        ]),
+        IconCategory(name: "Climate", icon: "thermometer.medium", options: [
+            IconOption(name: "Air Conditioner", icon: "air.conditioner.horizontal.fill", color: .blue, category: "Climate"),
+            IconOption(name: "Fan", icon: "fan.fill", color: .gray, category: "Climate"),
+            IconOption(name: "Heater", icon: "heater.vertical.fill", color: .orange, category: "Climate"),
+            IconOption(name: "Thermostat", icon: "thermometer.medium", color: .orange, category: "Climate"),
+        ]),
+        IconCategory(name: "Computers", icon: "desktopcomputer", options: [
+            IconOption(name: "Desktop", icon: "desktopcomputer", color: .gray, category: "Computers"),
+            IconOption(name: "Laptop", icon: "laptopcomputer", color: .gray, category: "Computers"),
+        ]),
+        IconCategory(name: "Entertainment", icon: "tv.fill", options: [
+            IconOption(name: "Apple TV", icon: "appletv.fill", color: .purple, category: "Entertainment"),
+            IconOption(name: "Game Console", icon: "gamecontroller.fill", color: .green, category: "Entertainment"),
+            IconOption(name: "Speaker", icon: "hifispeaker.fill", color: .purple, category: "Entertainment"),
+            IconOption(name: "TV", icon: "tv.fill", color: .purple, category: "Entertainment"),
+        ]),
+        IconCategory(name: "Infrastructure", icon: "server.rack", options: [
+            IconOption(name: "Cloud", icon: "cloud.fill", color: .blue, category: "Infrastructure"),
+            IconOption(name: "Container", icon: "shippingbox.fill", color: .indigo, category: "Infrastructure"),
+            IconOption(name: "Database", icon: "cylinder.fill", color: .indigo, category: "Infrastructure"),
+            IconOption(name: "Server", icon: "server.rack", color: .indigo, category: "Infrastructure"),
+            IconOption(name: "Virtual Machine", icon: "cube.transparent", color: .indigo, category: "Infrastructure"),
+        ]),
+        IconCategory(name: "Lighting", icon: "lightbulb.fill", options: [
+            IconOption(name: "Holiday/Festive", icon: "sparkles", color: .yellow, category: "Lighting"),
+            IconOption(name: "Light", icon: "lightbulb.fill", color: .yellow, category: "Lighting"),
+            IconOption(name: "String Lights", icon: "party.popper.fill", color: .orange, category: "Lighting"),
+        ]),
+        IconCategory(name: "Mobile", icon: "iphone", options: [
+            IconOption(name: "Phone", icon: "iphone", color: .blue, category: "Mobile"),
+            IconOption(name: "Tablet", icon: "ipad", color: .blue, category: "Mobile"),
+            IconOption(name: "Watch", icon: "applewatch", color: .blue, category: "Mobile"),
+        ]),
+        IconCategory(name: "Networking", icon: "wifi.router.fill", options: [
+            IconOption(name: "Access Point", icon: "wifi", color: .blue, category: "Networking"),
+            IconOption(name: "Firewall", icon: "flame.fill", color: .orange, category: "Networking"),
+            IconOption(name: "NAS", icon: "externaldrive.fill", color: .blue, category: "Networking"),
+            IconOption(name: "Printer", icon: "printer.fill", color: .gray, category: "Networking"),
+            IconOption(name: "Router", icon: "wifi.router.fill", color: .blue, category: "Networking"),
+            IconOption(name: "Switch", icon: "rectangle.connected.to.line.below", color: .blue, category: "Networking"),
+        ]),
+        IconCategory(name: "Power", icon: "battery.100.bolt", options: [
+            IconOption(name: "Solar", icon: "sun.max.fill", color: .mint, category: "Power"),
+            IconOption(name: "UPS/Battery", icon: "battery.100.bolt", color: .mint, category: "Power"),
+        ]),
+        IconCategory(name: "Security", icon: "shield.fill", options: [
+            IconOption(name: "Alarm", icon: "shield.fill", color: .red, category: "Security"),
+            IconOption(name: "Camera", icon: "video.fill", color: .red, category: "Security"),
+            IconOption(name: "Doorbell", icon: "video.doorbell.fill", color: .red, category: "Security"),
+            IconOption(name: "Lock", icon: "lock.fill", color: .red, category: "Security"),
+            IconOption(name: "Sensor", icon: "sensor.fill", color: .red, category: "Security"),
+        ]),
+        IconCategory(name: "Smart Home", icon: "house.fill", options: [
+            IconOption(name: "Blinds", icon: "blinds.vertical.closed", color: .gray, category: "Smart Home"),
+            IconOption(name: "Garage", icon: "door.garage.closed", color: .gray, category: "Smart Home"),
+            IconOption(name: "Home Assistant", icon: "house.fill", color: .cyan, category: "Smart Home"),
+            IconOption(name: "Smart Display", icon: "tv.fill", color: .cyan, category: "Smart Home"),
+            IconOption(name: "Smart Plug", icon: "powerplug.fill", color: .gray, category: "Smart Home"),
+            IconOption(name: "Smart Speaker", icon: "homepod.fill", color: .cyan, category: "Smart Home"),
+            IconOption(name: "Sprinkler", icon: "sprinkler.and.droplets.fill", color: .green, category: "Smart Home"),
+        ]),
+        IconCategory(name: "Vehicles", icon: "car.fill", options: [
+            IconOption(name: "Car", icon: "car.fill", color: .gray, category: "Vehicles"),
+            IconOption(name: "EV Charger", icon: "ev.charger.fill", color: .green, category: "Vehicles"),
+        ]),
     ]
 
     private init() {
@@ -861,6 +880,7 @@ struct HostsListView: View {
                         ForEach(filteredHosts) { host in
                             HostRowView(host: host)
                                 .environmentObject(client)
+                                .id(host.hostid)
                         }
                     }
                     .padding(.horizontal, 12)
@@ -1006,17 +1026,21 @@ struct HostRowView: View {
             }
         }
         .contextMenu {
-            Menu("Set Icon") {
-                ForEach(HostIconManager.availableIcons) { option in
-                    Button {
-                        iconManager.setIcon(
-                            for: host.hostid,
-                            icon: option.icon,
-                            color: HostIconManager.colorName(for: option.color)
-                        )
-                    } label: {
-                        Label(option.name, systemImage: option.icon)
+            ForEach(HostIconManager.iconCategories) { category in
+                Menu {
+                    ForEach(category.options) { option in
+                        Button {
+                            iconManager.setIcon(
+                                for: host.hostid,
+                                icon: option.icon,
+                                color: HostIconManager.colorName(for: option.color)
+                            )
+                        } label: {
+                            Label(option.name, systemImage: option.icon)
+                        }
                     }
+                } label: {
+                    Label(category.name, systemImage: category.icon)
                 }
             }
 
