@@ -180,8 +180,8 @@ struct ZabbixStatusView: View {
             if client.isAuthenticated {
                 // Tab selector
                 Picker("", selection: $selectedTab) {
-                    Text("Problems").tag(0)
-                    Text("Hosts").tag(1)
+                    Text("tab.problems").tag(0)
+                    Text("tab.hosts").tag(1)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -194,7 +194,7 @@ struct ZabbixStatusView: View {
                     VStack(spacing: 12) {
                         ProgressView()
                             .scaleEffect(1.2)
-                        Text("Loading...")
+                        Text("status.loading")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -243,7 +243,7 @@ struct HeaderView: View {
             }
 
             VStack(alignment: .leading, spacing: 1) {
-                Text("Zabbix Monitor")
+                Text("title.zabbixMonitor")
                     .font(.headline)
 
                 if client.isAuthenticated {
@@ -283,7 +283,7 @@ struct HeaderView: View {
         if let url = URL(string: client.serverURL), let host = url.host {
             return host
         }
-        return "Connected"
+        return String(localized: "status.connected")
     }
 }
 
@@ -315,11 +315,11 @@ struct LoginView: View {
                 }
 
                 VStack(spacing: 4) {
-                    Text("Connect to Zabbix")
+                    Text("title.connectToZabbix")
                         .font(.title2)
                         .fontWeight(.semibold)
 
-                    Text("Enter your server credentials")
+                    Text("subtitle.enterCredentials")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -327,7 +327,7 @@ struct LoginView: View {
                 // Form
                 VStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Server URL")
+                        Text("label.serverUrl")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         TextField("https://zabbix.example.com/api_jsonrpc.php", text: $client.serverURL)
@@ -341,10 +341,10 @@ struct LoginView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Username")
+                        Text("label.username")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                        TextField("Admin", text: $client.username)
+                        TextField(String(localized: "label.username"), text: $client.username)
                             .textFieldStyle(.plain)
                             .padding(10)
                             .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
@@ -355,15 +355,15 @@ struct LoginView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Password")
+                        Text("label.password")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         HStack(spacing: 8) {
                             Group {
                                 if showPassword {
-                                    TextField("Password", text: $password)
+                                    TextField(String(localized: "label.password"), text: $password)
                                 } else {
-                                    SecureField("Password", text: $password)
+                                    SecureField(String(localized: "label.password"), text: $password)
                                 }
                             }
                             .textFieldStyle(.plain)
@@ -432,7 +432,7 @@ struct LoginView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "antenna.radiowaves.left.and.right")
-                            Text("Test")
+                            Text("button.test")
                         }
                         .font(.subheadline.weight(.medium))
                         .frame(maxWidth: .infinity)
@@ -455,7 +455,7 @@ struct LoginView: View {
                             } else {
                                 Image(systemName: "arrow.right.circle.fill")
                             }
-                            Text("Login")
+                            Text("button.login")
                         }
                         .font(.subheadline.weight(.medium))
                         .frame(maxWidth: .infinity)
@@ -491,9 +491,9 @@ struct ProblemsListView: View {
                 }
 
                 VStack(spacing: 4) {
-                    Text("All Clear")
+                    Text("status.allClear")
                         .font(.headline)
-                    Text("No active problems")
+                    Text("status.noActiveProblems")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -590,14 +590,14 @@ struct ProblemRowView: View {
                 Button {
                     showAcknowledge = true
                 } label: {
-                    Label("Acknowledge", systemImage: "checkmark.circle")
+                    Label(String(localized: "button.acknowledge"), systemImage: "checkmark.circle")
                 }
             }
             Button {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(problem.name, forType: .string)
             } label: {
-                Label("Copy Name", systemImage: "doc.on.doc")
+                Label(String(localized: "menu.copyName"), systemImage: "doc.on.doc")
             }
         }
         .sheet(isPresented: $showAcknowledge) {
@@ -639,7 +639,7 @@ struct AcknowledgeSheet: View {
                         .foregroundStyle(.blue)
                 }
 
-                Text("Acknowledge Problem")
+                Text("title.acknowledgeProblem")
                     .font(.headline)
             }
 
@@ -652,10 +652,10 @@ struct AcknowledgeSheet: View {
 
             // Message field
             VStack(alignment: .leading, spacing: 6) {
-                Text("Message (optional)")
+                Text("label.messageOptional")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                TextField("Add a note...", text: $message)
+                TextField(String(localized: "placeholder.addNote"), text: $message)
                     .textFieldStyle(.plain)
                     .padding(10)
                     .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
@@ -668,7 +668,7 @@ struct AcknowledgeSheet: View {
 
             // Buttons
             HStack(spacing: 12) {
-                Button("Cancel") {
+                Button(String(localized: "button.cancel")) {
                     dismiss()
                 }
                 .buttonStyle(.bordered)
@@ -691,7 +691,7 @@ struct AcknowledgeSheet: View {
                                 .scaleEffect(0.7)
                                 .frame(width: 14, height: 14)
                         }
-                        Text("Acknowledge")
+                        Text("button.acknowledge")
                     }
                 }
                 .buttonStyle(.borderedProminent)
@@ -777,7 +777,7 @@ struct HostsListView: View {
                         .font(.system(size: 12))
                         .foregroundStyle(.tertiary)
 
-                    TextField("Search...", text: $searchText)
+                    TextField(String(localized: "placeholder.search"), text: $searchText)
                         .textFieldStyle(.plain)
                         .font(.subheadline)
 
@@ -810,7 +810,7 @@ struct HostsListView: View {
                         }
                     } label: {
                         HStack(spacing: 2) {
-                            Text("A-Z")
+                            Text("sort.aToZ")
                                 .font(.caption)
                                 .fontWeight(sortType == .alphabetical ? .semibold : .regular)
                             if sortType == .alphabetical {
@@ -835,7 +835,7 @@ struct HostsListView: View {
                         }
                     } label: {
                         HStack(spacing: 2) {
-                            Text("Problems")
+                            Text("tab.problems")
                                 .font(.caption)
                                 .fontWeight(sortType == .problems ? .semibold : .regular)
                             if sortType == .problems {
@@ -869,7 +869,7 @@ struct HostsListView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Text("No hosts found")
+                    Text("status.noHostsFound")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -1046,7 +1046,7 @@ struct HostRowView: View {
 
             if iconManager.hasCustomIcon(for: host.hostid) {
                 Divider()
-                Button("Reset to Auto") {
+                Button(String(localized: "button.resetToAuto")) {
                     iconManager.removeCustomIcon(for: host.hostid)
                 }
             }
@@ -1378,7 +1378,7 @@ struct FooterView: View {
 
             Menu {
                 SettingsLink {
-                    Label("Settings...", systemImage: "gearshape")
+                    Label("menu.settings", systemImage: "gearshape")
                 }
                 .keyboardShortcut(",", modifiers: .command)
 
@@ -1387,7 +1387,7 @@ struct FooterView: View {
                 Button {
                     client.logout()
                 } label: {
-                    Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
+                    Label("menu.logout", systemImage: "rectangle.portrait.and.arrow.right")
                 }
 
                 Divider()
@@ -1395,7 +1395,7 @@ struct FooterView: View {
                 Button {
                     NSApp.terminate(nil)
                 } label: {
-                    Label("Quit", systemImage: "power")
+                    Label("menu.quit", systemImage: "power")
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -1439,7 +1439,7 @@ struct ErrorView: View {
             }
 
             VStack(spacing: 8) {
-                Text("Connection Error")
+                Text("error.connectionError")
                     .font(.headline)
 
                 Text(message)
@@ -1454,7 +1454,7 @@ struct ErrorView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.clockwise")
-                    Text("Retry")
+                    Text("button.retry")
                 }
                 .font(.subheadline.weight(.medium))
             }

@@ -1,5 +1,6 @@
 import Foundation
 import Security
+import SwiftUI
 
 // MARK: - Zabbix API Models
 
@@ -118,6 +119,14 @@ enum ProblemSortOrder: String, CaseIterable, Codable {
         case .alphabetical: return "Alphabetical"
         }
     }
+
+    var localizedName: String {
+        switch self {
+        case .criticality: return String(localized: "sort.criticality")
+        case .latest: return String(localized: "sort.latest")
+        case .alphabetical: return String(localized: "sort.alphabetical")
+        }
+    }
 }
 
 // MARK: - Severity Filter
@@ -160,6 +169,15 @@ enum AIProvider: String, CaseIterable, Codable {
         switch self {
         case .disabled: return "Disabled"
         case .ollama: return "Ollama (Local)"
+        case .openai: return "OpenAI"
+        case .anthropic: return "Anthropic"
+        }
+    }
+
+    var localizedName: LocalizedStringKey {
+        switch self {
+        case .disabled: return "ai.disabled"
+        case .ollama: return "ai.ollamaLocal"
         case .openai: return "OpenAI"
         case .anthropic: return "Anthropic"
         }

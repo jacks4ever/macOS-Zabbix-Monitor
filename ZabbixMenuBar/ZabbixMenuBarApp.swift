@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct ZabbixMenuBarApp: App {
     @StateObject private var zabbixClient = ZabbixAPIClient()
+    @ObservedObject private var languageManager = LanguageManager.shared
 
     var body: some Scene {
         MenuBarExtra {
@@ -10,6 +11,7 @@ struct ZabbixMenuBarApp: App {
                 .environmentObject(zabbixClient)
                 .frame(width: 400, height: 500)
                 .environment(\.colorScheme, .dark)
+                .environment(\.locale, languageManager.effectiveLocale)
         } label: {
             Image(nsImage: {
                 let image = NSImage(systemSymbolName: "z.square.fill", accessibilityDescription: "Zabbix")!
@@ -23,6 +25,7 @@ struct ZabbixMenuBarApp: App {
         Settings {
             SettingsView()
                 .environmentObject(zabbixClient)
+                .environment(\.locale, languageManager.effectiveLocale)
         }
     }
 }

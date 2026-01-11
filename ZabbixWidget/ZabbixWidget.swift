@@ -1,6 +1,24 @@
 import WidgetKit
 import SwiftUI
 
+// MARK: - Widget Language Helper
+
+/// Reads the user's language preference from shared UserDefaults
+/// This allows the widget to respect the app's language setting
+struct WidgetLanguageHelper {
+    private static let languageKey = "app_language"
+
+    static var effectiveLocale: Locale {
+        guard let defaults = UserDefaults(suiteName: userDefaultsSuite),
+              let savedLanguage = defaults.string(forKey: languageKey),
+              let language = AppLanguage(rawValue: savedLanguage),
+              let locale = language.locale else {
+            return Locale.current
+        }
+        return locale
+    }
+}
+
 // MARK: - Timeline Provider
 
 struct ZabbixProvider: TimelineProvider {
@@ -137,7 +155,7 @@ struct ZabbixWidgetEntryView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 28, height: 28)
-                Text("Zabbix")
+                Text("widget.zabbix")
                     .font(.headline)
             }
 
@@ -148,7 +166,7 @@ struct ZabbixWidgetEntryView: View {
                     Image(systemName: "gear")
                         .font(.title2)
                         .foregroundColor(.secondary)
-                    Text("Open app to setup")
+                    Text("widget.openAppToSetup")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -157,7 +175,7 @@ struct ZabbixWidgetEntryView: View {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
-                    Text("All Clear")
+                    Text("status.allClear")
                         .font(.title3)
                 }
             } else {
@@ -165,7 +183,7 @@ struct ZabbixWidgetEntryView: View {
                     Text("\(entry.problemCount)")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(maxSeverityColor)
-                    Text(entry.problemCount == 1 ? "Problem" : "Problems")
+                    Text(entry.problemCount == 1 ? "widget.problem" : "widget.problems")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -186,28 +204,28 @@ struct ZabbixWidgetEntryView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
-                    Text("Zabbix")
+                    Text("widget.zabbix")
                         .font(.headline)
                 }
 
                 Spacer()
 
                 if !entry.isConfigured {
-                    Text("Open app to setup")
+                    Text("widget.openAppToSetup")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else if entry.problemCount == 0 {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("All Clear")
+                        Text("status.allClear")
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("\(entry.problemCount)")
                             .font(.system(size: 32, weight: .bold))
                             .foregroundColor(maxSeverityColor)
-                        Text(entry.problemCount == 1 ? "Problem" : "Problems")
+                        Text(entry.problemCount == 1 ? "widget.problem" : "widget.problems")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -221,18 +239,18 @@ struct ZabbixWidgetEntryView: View {
 
                 if !entry.aiSummary.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("AI Summary")
+                        Text("widget.aiSummary")
                             .font(.caption2)
                             .fontWeight(.semibold)
                             .foregroundColor(.secondary)
-                        Text(entry.aiSummary)
+                        Text(verbatim: entry.aiSummary)
                             .font(.caption2)
                             .minimumScaleFactor(0.8)
                     }
                 } else {
                     // Show problem list when AI is disabled
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Active Problems")
+                        Text("widget.activeProblems")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundColor(.secondary)
@@ -241,7 +259,7 @@ struct ZabbixWidgetEntryView: View {
                                 Circle()
                                     .fill(problem.color)
                                     .frame(width: 6, height: 6)
-                                Text(problem.name)
+                                Text(verbatim: problem.name)
                                     .font(.caption2)
                                     .lineLimit(1)
                             }
@@ -252,11 +270,11 @@ struct ZabbixWidgetEntryView: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("AI Summary")
+                    Text("widget.aiSummary")
                         .font(.caption2)
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
-                    Text(entry.aiSummary)
+                    Text(verbatim: entry.aiSummary)
                         .font(.caption2)
                         .minimumScaleFactor(0.8)
                 }
@@ -274,18 +292,22 @@ struct ZabbixWidgetEntryView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 28, height: 28)
-                Text("Zabbix Monitor")
+                Text("widget.zabbixMonitor")
                     .font(.headline)
 
                 Spacer()
 
                 if entry.isConfigured {
                     if entry.problemCount == 0 {
-                        Label("All Clear", systemImage: "checkmark.circle.fill")
-                            .font(.caption)
-                            .foregroundColor(.green)
+                        Label {
+                            Text("status.allClear")
+                        } icon: {
+                            Image(systemName: "checkmark.circle.fill")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.green)
                     } else {
-                        Text("\(entry.problemCount) \(entry.problemCount == 1 ? "Problem" : "Problems")")
+                        Text("\(entry.problemCount) \(entry.problemCount == 1 ? String(localized: "widget.problem") : String(localized: "widget.problems"))")
                             .font(.caption)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -306,7 +328,7 @@ struct ZabbixWidgetEntryView: View {
                         Image(systemName: "gear")
                             .font(.system(size: 40))
                             .foregroundColor(.secondary)
-                        Text("Open app to setup")
+                        Text("widget.openAppToSetup")
                             .foregroundColor(.secondary)
                     }
                     Spacer()
@@ -319,7 +341,7 @@ struct ZabbixWidgetEntryView: View {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
-                            Text("All systems operational")
+                            Text("widget.allSystemsOperational")
                                 .font(.body)
                         }
                     }
@@ -328,12 +350,12 @@ struct ZabbixWidgetEntryView: View {
                     // Has problems - show AI summary if available, then problem list
                     if !entry.aiSummary.isEmpty {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("AI Summary")
+                            Text("widget.aiSummary")
                                 .font(.caption2)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.secondary)
 
-                            Text(entry.aiSummary)
+                            Text(verbatim: entry.aiSummary)
                                 .font(.caption)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -343,7 +365,7 @@ struct ZabbixWidgetEntryView: View {
 
                     // Always show top 5 problems with severity icons
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Top Problems")
+                        Text("widget.topProblems")
                             .font(.caption2)
                             .fontWeight(.semibold)
                             .foregroundColor(.secondary)
@@ -354,7 +376,7 @@ struct ZabbixWidgetEntryView: View {
                                     .font(.system(size: 12))
                                     .foregroundColor(problem.color)
                                     .frame(width: 14)
-                                Text(problem.name)
+                                Text(verbatim: problem.name)
                                     .font(.caption)
                                     .lineLimit(1)
                                 Spacer()
@@ -362,7 +384,7 @@ struct ZabbixWidgetEntryView: View {
                         }
 
                         if entry.problems.count > 5 {
-                            Text("+ \(entry.problems.count - 5) more...")
+                            Text(verbatim: "+ \(entry.problems.count - 5) \(String(localized: "widget.more"))")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
@@ -399,9 +421,10 @@ struct ZabbixWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ZabbixProvider()) { entry in
             ZabbixWidgetEntryView(entry: entry)
+                .environment(\.locale, WidgetLanguageHelper.effectiveLocale)
         }
-        .configurationDisplayName("Zabbix Monitor")
-        .description("View active problems from your Zabbix server.")
+        .configurationDisplayName(Text("widget.configName"))
+        .description(Text("widget.configDescription"))
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }

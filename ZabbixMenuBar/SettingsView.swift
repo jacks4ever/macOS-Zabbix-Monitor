@@ -2,39 +2,46 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var client: ZabbixAPIClient
+    @ObservedObject var languageManager = LanguageManager.shared
 
     var body: some View {
         TabView {
             ConnectionSettingsView()
                 .environmentObject(client)
                 .tabItem {
-                    Label("Connection", systemImage: "network")
+                    Label("tab.connection", systemImage: "network")
                 }
 
             FiltersSettingsView()
                 .environmentObject(client)
                 .tabItem {
-                    Label("Filters", systemImage: "line.3.horizontal.decrease.circle")
+                    Label("tab.filters", systemImage: "line.3.horizontal.decrease.circle")
                 }
 
             SecuritySettingsView()
                 .environmentObject(client)
                 .tabItem {
-                    Label("Security", systemImage: "lock.shield")
+                    Label("tab.security", systemImage: "lock.shield")
                 }
 
             AISettingsView()
                 .environmentObject(client)
                 .tabItem {
-                    Label("AI", systemImage: "brain")
+                    Label("tab.ai", systemImage: "brain")
+                }
+
+            LanguageSettingsView()
+                .tabItem {
+                    Label("tab.language", systemImage: "globe")
                 }
 
             AboutView()
                 .tabItem {
-                    Label("About", systemImage: "info.circle")
+                    Label("tab.about", systemImage: "info.circle")
                 }
         }
         .frame(width: 500, height: 520)
+        .environment(\.locale, languageManager.effectiveLocale)
     }
 }
 
@@ -91,7 +98,7 @@ struct ColoredToggleStyle: ToggleStyle {
 // MARK: - Section Header
 
 struct SectionHeader: View {
-    let title: String
+    let titleKey: LocalizedStringKey
     let icon: String
 
     var body: some View {
@@ -99,7 +106,7 @@ struct SectionHeader: View {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
-            Text(title)
+            Text(titleKey)
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
@@ -121,10 +128,10 @@ struct ConnectionSettingsView: View {
             // Server Configuration
             GlassCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    SectionHeader(title: "Server", icon: "server.rack")
+                    SectionHeader(titleKey: "section.server", icon: "server.rack")
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Server URL")
+                        Text("label.serverUrl")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         TextField("https://your-zabbix-server/api_jsonrpc.php", text: $client.serverURL)
@@ -138,10 +145,10 @@ struct ConnectionSettingsView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Username")
+                        Text("label.username")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                        TextField("Username", text: $client.username)
+                        TextField(String(localized: "label.username"), text: $client.username)
                             .textFieldStyle(.plain)
                             .padding(8)
                             .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
@@ -156,19 +163,19 @@ struct ConnectionSettingsView: View {
             // Preferences
             GlassCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    SectionHeader(title: "Preferences", icon: "gearshape")
+                    SectionHeader(titleKey: "section.preferences", icon: "gearshape")
 
                     HStack {
-                        Text("Refresh Interval")
+                        Text("label.refreshInterval")
                         Spacer()
                         Picker("", selection: $client.refreshInterval) {
-                            Text("5 seconds").tag(5.0)
-                            Text("10 seconds").tag(10.0)
-                            Text("15 seconds").tag(15.0)
-                            Text("30 seconds").tag(30.0)
-                            Text("1 minute").tag(60.0)
-                            Text("5 minutes").tag(300.0)
-                            Text("Manual only").tag(0.0)
+                            Text("interval.5seconds").tag(5.0)
+                            Text("interval.10seconds").tag(10.0)
+                            Text("interval.15seconds").tag(15.0)
+                            Text("interval.30seconds").tag(30.0)
+                            Text("interval.1minute").tag(60.0)
+                            Text("interval.5minutes").tag(300.0)
+                            Text("interval.manualOnly").tag(0.0)
                         }
                         .pickerStyle(.menu)
                         .frame(width: 140)
@@ -177,11 +184,11 @@ struct ConnectionSettingsView: View {
                     Divider().opacity(0.5)
 
                     HStack {
-                        Text("Sort Problems By")
+                        Text("label.sortProblemsBy")
                         Spacer()
                         Picker("", selection: $client.problemSortOrder) {
                             ForEach(ProblemSortOrder.allCases, id: \.self) { order in
-                                Text(order.displayName).tag(order)
+                                Text(order.localizedName).tag(order)
                             }
                         }
                         .pickerStyle(.menu)
@@ -226,7 +233,7 @@ struct ConnectionSettingsView: View {
                             } else {
                                 Image(systemName: "antenna.radiowaves.left.and.right")
                             }
-                            Text("Test Connection")
+                            Text("button.testConnection")
                         }
                         .font(.subheadline.weight(.medium))
                     }
@@ -252,17 +259,17 @@ struct FiltersSettingsView: View {
             // Menu Bar Severity Filters
             GlassCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    SectionHeader(title: "Menu Bar Severity", icon: "menubar.rectangle")
+                    SectionHeader(titleKey: "section.menuBarSeverity", icon: "menubar.rectangle")
 
                     HStack(spacing: 8) {
-                        SeverityToggle(label: "Disaster", color: .purple, isOn: $client.severityFilter.disaster)
-                        SeverityToggle(label: "High", color: .red, isOn: $client.severityFilter.high)
-                        SeverityToggle(label: "Average", color: .orange, isOn: $client.severityFilter.average)
+                        SeverityToggle(labelKey: "severity.disaster", color: .purple, isOn: $client.severityFilter.disaster)
+                        SeverityToggle(labelKey: "severity.high", color: .red, isOn: $client.severityFilter.high)
+                        SeverityToggle(labelKey: "severity.average", color: .orange, isOn: $client.severityFilter.average)
                     }
                     HStack(spacing: 8) {
-                        SeverityToggle(label: "Warning", color: .yellow, isOn: $client.severityFilter.warning)
-                        SeverityToggle(label: "Info", color: .blue, isOn: $client.severityFilter.information)
-                        SeverityToggle(label: "N/C", color: .gray, isOn: $client.severityFilter.notClassified)
+                        SeverityToggle(labelKey: "severity.warning", color: .yellow, isOn: $client.severityFilter.warning)
+                        SeverityToggle(labelKey: "severity.info", color: .blue, isOn: $client.severityFilter.information)
+                        SeverityToggle(labelKey: "severity.notClassified", color: .gray, isOn: $client.severityFilter.notClassified)
                     }
                 }
             }
@@ -270,17 +277,17 @@ struct FiltersSettingsView: View {
             // Widget Severity Filters
             GlassCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    SectionHeader(title: "Widget Severity", icon: "widget.small")
+                    SectionHeader(titleKey: "section.widgetSeverity", icon: "widget.small")
 
                     HStack(spacing: 8) {
-                        SeverityToggle(label: "Disaster", color: .purple, isOn: $client.widgetSeverityFilter.disaster)
-                        SeverityToggle(label: "High", color: .red, isOn: $client.widgetSeverityFilter.high)
-                        SeverityToggle(label: "Average", color: .orange, isOn: $client.widgetSeverityFilter.average)
+                        SeverityToggle(labelKey: "severity.disaster", color: .purple, isOn: $client.widgetSeverityFilter.disaster)
+                        SeverityToggle(labelKey: "severity.high", color: .red, isOn: $client.widgetSeverityFilter.high)
+                        SeverityToggle(labelKey: "severity.average", color: .orange, isOn: $client.widgetSeverityFilter.average)
                     }
                     HStack(spacing: 8) {
-                        SeverityToggle(label: "Warning", color: .yellow, isOn: $client.widgetSeverityFilter.warning)
-                        SeverityToggle(label: "Info", color: .blue, isOn: $client.widgetSeverityFilter.information)
-                        SeverityToggle(label: "N/C", color: .gray, isOn: $client.widgetSeverityFilter.notClassified)
+                        SeverityToggle(labelKey: "severity.warning", color: .yellow, isOn: $client.widgetSeverityFilter.warning)
+                        SeverityToggle(labelKey: "severity.info", color: .blue, isOn: $client.widgetSeverityFilter.information)
+                        SeverityToggle(labelKey: "severity.notClassified", color: .gray, isOn: $client.widgetSeverityFilter.notClassified)
                     }
                 }
             }
@@ -294,7 +301,7 @@ struct FiltersSettingsView: View {
 // MARK: - Severity Toggle
 
 struct SeverityToggle: View {
-    let label: String
+    let labelKey: LocalizedStringKey
     let color: Color
     @Binding var isOn: Bool
     @State private var isHovering = false
@@ -306,7 +313,7 @@ struct SeverityToggle: View {
                     .fill(color.gradient)
                     .frame(width: 10, height: 10)
                     .shadow(color: color.opacity(0.4), radius: isOn ? 4 : 0)
-                Text(label)
+                Text(labelKey)
                     .font(.subheadline)
                 Spacer()
                 Image(systemName: isOn ? "checkmark.square.fill" : "square")
@@ -342,13 +349,13 @@ struct SecuritySettingsView: View {
                 // SSL Settings
                 GlassCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "SSL Certificate", icon: "lock")
+                        SectionHeader(titleKey: "section.sslCertificate", icon: "lock")
 
                         Toggle(isOn: $client.allowSelfSignedCerts) {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Allow self-signed certificates")
+                                Text("toggle.allowSelfSigned")
                                     .font(.body)
-                                Text("Enable for local network servers with self-signed SSL certificates")
+                                Text("toggle.allowSelfSignedDescription")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -360,7 +367,7 @@ struct SecuritySettingsView: View {
                 // Authentication Status
                 GlassCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "Authentication", icon: "person.badge.key")
+                        SectionHeader(titleKey: "section.authentication", icon: "person.badge.key")
 
                         HStack(spacing: 12) {
                             ZStack {
@@ -373,10 +380,10 @@ struct SecuritySettingsView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(client.isAuthenticated ? "Authenticated" : "Not Authenticated")
+                                Text(client.isAuthenticated ? "status.authenticated" : "status.notAuthenticated")
                                     .font(.headline)
                                     .foregroundColor(client.isAuthenticated ? .primary : .secondary)
-                                Text(client.isAuthenticated ? "Credentials stored securely in Keychain" : "Connect to your Zabbix server to authenticate")
+                                Text(client.isAuthenticated ? "status.credentialsStored" : "status.connectToAuthenticate")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -392,7 +399,7 @@ struct SecuritySettingsView: View {
                             } label: {
                                 HStack {
                                     Image(systemName: "trash")
-                                    Text("Clear Saved Credentials")
+                                    Text("button.clearCredentials")
                                 }
                                 .font(.subheadline.weight(.medium))
                             }
@@ -422,20 +429,21 @@ struct AISettingsView: View {
                 // Provider Selection
                 GlassCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "AI Provider", icon: "brain")
+                        SectionHeader(titleKey: "section.aiProvider", icon: "brain")
 
-                        Picker("Provider", selection: $client.aiProvider) {
+                        Picker("", selection: $client.aiProvider) {
                             ForEach(AIProvider.allCases, id: \.self) { provider in
-                                Text(provider.displayName).tag(provider)
+                                Text(provider.localizedName).tag(provider)
                             }
                         }
                         .pickerStyle(.segmented)
+                        .labelsHidden()
 
                         if client.aiProvider == .disabled {
                             HStack(spacing: 8) {
                                 Image(systemName: "info.circle")
                                     .foregroundStyle(.secondary)
-                                Text("AI summaries are disabled. The widget will display actual Zabbix problems.")
+                                Text("ai.disabledMessage")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -449,10 +457,10 @@ struct AISettingsView: View {
                 if client.aiProvider == .ollama {
                     GlassCard {
                         VStack(alignment: .leading, spacing: 12) {
-                            SectionHeader(title: "Ollama Configuration", icon: "server.rack")
+                            SectionHeader(titleKey: "section.ollamaConfig", icon: "server.rack")
 
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Server URL")
+                                Text("label.serverUrl")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 TextField("http://localhost:11434", text: $client.ollamaURL)
@@ -466,7 +474,7 @@ struct AISettingsView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Model")
+                                Text("label.model")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 TextField("mistral:7b", text: $client.ollamaModel)
@@ -477,9 +485,12 @@ struct AISettingsView: View {
                                         RoundedRectangle(cornerRadius: 8)
                                             .strokeBorder(.quaternary, lineWidth: 1)
                                     )
-                                Text("Examples: mistral:7b, llama2, codellama")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
+                                HStack(spacing: 4) {
+                                    Text("label.examples")
+                                    Text(verbatim: "mistral:7b, llama2, codellama")
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
                             }
                         }
                     }
@@ -488,10 +499,10 @@ struct AISettingsView: View {
                 if client.aiProvider == .openai {
                     GlassCard {
                         VStack(alignment: .leading, spacing: 12) {
-                            SectionHeader(title: "OpenAI Configuration", icon: "key")
+                            SectionHeader(titleKey: "section.openaiConfig", icon: "key")
 
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("API Key")
+                                Text("label.apiKey")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 SecureField("sk-...", text: $client.openAIAPIKey)
@@ -505,7 +516,7 @@ struct AISettingsView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Model")
+                                Text("label.model")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 TextField("gpt-4o-mini", text: $client.openAIModel)
@@ -516,9 +527,12 @@ struct AISettingsView: View {
                                         RoundedRectangle(cornerRadius: 8)
                                             .strokeBorder(.quaternary, lineWidth: 1)
                                     )
-                                Text("Examples: gpt-4o-mini, gpt-4o, gpt-4-turbo")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
+                                HStack(spacing: 4) {
+                                    Text("label.examples")
+                                    Text(verbatim: "gpt-4o-mini, gpt-4o, gpt-4-turbo")
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
                             }
                         }
                     }
@@ -527,10 +541,10 @@ struct AISettingsView: View {
                 if client.aiProvider == .anthropic {
                     GlassCard {
                         VStack(alignment: .leading, spacing: 12) {
-                            SectionHeader(title: "Anthropic Configuration", icon: "key")
+                            SectionHeader(titleKey: "section.anthropicConfig", icon: "key")
 
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("API Key")
+                                Text("label.apiKey")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 SecureField("sk-ant-...", text: $client.anthropicAPIKey)
@@ -544,7 +558,7 @@ struct AISettingsView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Model")
+                                Text("label.model")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                 TextField("claude-3-5-haiku-latest", text: $client.anthropicModel)
@@ -555,9 +569,12 @@ struct AISettingsView: View {
                                         RoundedRectangle(cornerRadius: 8)
                                             .strokeBorder(.quaternary, lineWidth: 1)
                                     )
-                                Text("Examples: claude-3-5-haiku-latest, claude-3-5-sonnet-latest")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
+                                HStack(spacing: 4) {
+                                    Text("label.examples")
+                                    Text(verbatim: "claude-3-5-haiku-latest, claude-3-5-sonnet-latest")
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
                             }
                         }
                     }
@@ -599,7 +616,7 @@ struct AISettingsView: View {
                                     } else {
                                         Image(systemName: "sparkles")
                                     }
-                                    Text("Test AI")
+                                    Text("button.testAI")
                                 }
                                 .font(.subheadline.weight(.medium))
                             }
@@ -618,6 +635,79 @@ struct AISettingsView: View {
     }
 }
 
+// MARK: - Language Settings
+
+struct LanguageSettingsView: View {
+    @ObservedObject var languageManager = LanguageManager.shared
+
+    var body: some View {
+        VStack(spacing: 16) {
+            GlassCard {
+                VStack(alignment: .leading, spacing: 12) {
+                    SectionHeader(titleKey: "section.appLanguage", icon: "globe")
+
+                    ForEach(AppLanguage.allCases, id: \.rawValue) { language in
+                        LanguageRow(
+                            language: language,
+                            isSelected: languageManager.selectedLanguage == language
+                        ) {
+                            languageManager.selectedLanguage = language
+                        }
+                    }
+                }
+            }
+
+            GlassCard {
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle")
+                        .foregroundStyle(.secondary)
+                    Text("language.followsSystemSettings")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer()
+        }
+        .padding(20)
+    }
+}
+
+struct LanguageRow: View {
+    let language: AppLanguage
+    let isSelected: Bool
+    let action: () -> Void
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Text(language.displayName)
+                    .font(.body)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.accentColor)
+                        .fontWeight(.semibold)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isHovering ? .white.opacity(0.08) : (isSelected ? .accentColor.opacity(0.1) : .clear))
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isHovering = hovering
+            }
+        }
+    }
+}
+
 // MARK: - About View
 
 struct AboutView: View {
@@ -632,11 +722,11 @@ struct AboutView: View {
                     .scaledToFit()
                     .frame(width: 80, height: 80)
 
-                Text("Zabbix Menu Bar")
+                Text("about.title")
                     .font(.title)
                     .fontWeight(.bold)
 
-                Text("Version 1.1")
+                Text("about.version")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -647,20 +737,20 @@ struct AboutView: View {
             // Features
             GlassCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Features")
+                    Text("about.features")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                        FeatureRow(icon: "bell.fill", text: "Real-time monitoring")
-                        FeatureRow(icon: "server.rack", text: "Host overview")
-                        FeatureRow(icon: "brain", text: "AI summaries")
-                        FeatureRow(icon: "square.grid.2x2", text: "Desktop widget")
-                        FeatureRow(icon: "slider.horizontal.3", text: "Severity filters")
-                        FeatureRow(icon: "checkmark.circle", text: "Acknowledge")
-                        FeatureRow(icon: "lock.shield", text: "Secure storage")
-                        FeatureRow(icon: "arrow.clockwise", text: "Auto refresh")
+                        FeatureRow(icon: "bell.fill", textKey: "feature.realTimeMonitoring")
+                        FeatureRow(icon: "server.rack", textKey: "feature.hostOverview")
+                        FeatureRow(icon: "brain", textKey: "feature.aiSummaries")
+                        FeatureRow(icon: "square.grid.2x2", textKey: "feature.desktopWidget")
+                        FeatureRow(icon: "slider.horizontal.3", textKey: "feature.severityFilters")
+                        FeatureRow(icon: "checkmark.circle", textKey: "feature.acknowledge")
+                        FeatureRow(icon: "lock.shield", textKey: "feature.secureStorage")
+                        FeatureRow(icon: "arrow.clockwise", textKey: "feature.autoRefresh")
                     }
                 }
             }
@@ -668,7 +758,7 @@ struct AboutView: View {
 
             Spacer()
 
-            Text("Made with ❤️ in Colorado, USA")
+            Text("about.madeWith")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .padding(.bottom, 16)
@@ -678,7 +768,7 @@ struct AboutView: View {
 
 struct FeatureRow: View {
     let icon: String
-    let text: String
+    let textKey: LocalizedStringKey
 
     var body: some View {
         HStack(spacing: 8) {
@@ -686,7 +776,7 @@ struct FeatureRow: View {
                 .font(.system(size: 12))
                 .foregroundStyle(.tint)
                 .frame(width: 20)
-            Text(text)
+            Text(textKey)
                 .font(.caption)
                 .foregroundStyle(.primary)
             Spacer()
