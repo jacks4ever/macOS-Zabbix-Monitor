@@ -1,6 +1,8 @@
 import Foundation
 import Security
 import SwiftUI
+import WidgetKit
+import Combine
 
 // MARK: - Zabbix API Models
 
@@ -344,164 +346,67 @@ class ZabbixAPIClient: ObservableObject {
     /// Pause auto-refresh (e.g., when context menu is open)
     var pauseRefresh = false
 
-    // Configuration
-    @Published var serverURL: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.serverURL, forKey: "zabbix_server_url")
-            }
-        }
-    }
-    @Published var username: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.username, forKey: "zabbix_username")
-            }
-        }
-    }
-    @Published var refreshInterval: TimeInterval = 60 {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                UserDefaults.standard.set(self.refreshInterval, forKey: "zabbix_refresh_interval")
-                self.setupRefreshTimer()
-            }
-        }
-    }
-    @Published var allowSelfSignedCerts: Bool = true {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                UserDefaults.standard.set(self.allowSelfSignedCerts, forKey: "zabbix_allow_self_signed")
-                self.setupSession()
-            }
-        }
-    }
-    @Published var problemSortOrder: ProblemSortOrder {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.problemSortOrder.rawValue, forKey: "problem_sort_order")
-            }
-        }
-    }
-    @Published var severityFilter: SeverityFilter {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                if let data = try? JSONEncoder().encode(self.severityFilter) {
-                    UserDefaults.standard.set(data, forKey: "severity_filter")
-                }
-            }
-        }
-    }
-    @Published var widgetSeverityFilter: WidgetSeverityFilter {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                if let data = try? JSONEncoder().encode(self.widgetSeverityFilter) {
-                    UserDefaults.standard.set(data, forKey: "widget_severity_filter")
-                }
-                self.saveDataForWidget()
-            }
-        }
-    }
+    // Configuration - simple @Published without didSet
+    @Published var serverURL: String = ""
+    @Published var username: String = ""
+    @Published var refreshInterval: TimeInterval = 60
+    @Published var allowSelfSignedCerts: Bool = true
+    @Published var problemSortOrder: ProblemSortOrder = .criticality
+    @Published var severityFilter: SeverityFilter = SeverityFilter()
+    @Published var widgetSeverityFilter: WidgetSeverityFilter = WidgetSeverityFilter()
 
-    // AI Configuration
-    @Published var aiProvider: AIProvider {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                UserDefaults.standard.set(self.aiProvider.rawValue, forKey: "ai_provider")
-                self.onAIProviderChanged()
-            }
-        }
-    }
-    @Published var ollamaURL: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.ollamaURL, forKey: "ollama_url")
-            }
-        }
-    }
-    @Published var ollamaModel: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.ollamaModel, forKey: "ollama_model")
-            }
-        }
-    }
-    @Published var openAIAPIKey: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.openAIAPIKey, forKey: "openai_api_key")
-            }
-        }
-    }
-    @Published var openAIModel: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.openAIModel, forKey: "openai_model")
-            }
-        }
-    }
-    @Published var anthropicAPIKey: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.anthropicAPIKey, forKey: "anthropic_api_key")
-            }
-        }
-    }
-    @Published var anthropicModel: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.anthropicModel, forKey: "anthropic_model")
-            }
-        }
-    }
-    @Published var customAIPrompt: String {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(self.customAIPrompt, forKey: "custom_ai_prompt")
-            }
-        }
-    }
+    // AI Configuration - simple @Published without didSet
+    @Published var aiProvider: AIProvider = .ollama
+    @Published var ollamaURL: String = ""
+    @Published var ollamaModel: String = ""
+    @Published var openAIAPIKey: String = ""
+    @Published var openAIModel: String = ""
+    @Published var anthropicAPIKey: String = ""
+    @Published var anthropicModel: String = ""
+    @Published var customAIPrompt: String = ""
+    @Published var widgetProblemCount: Int = 6
     @Published var aiSummary: String = ""
 
-    /// Default AI prompt - localized based on app language setting
+    // Combine cancellables for persistence subscriptions
+    private var cancellables = Set<AnyCancellable>()
+
+    /// Default AI prompt - localized based on app's selected language setting
     static var defaultAIPrompt: String {
-        String(localized: "ai.defaultPrompt")
+        let language = LanguageManager.shared.selectedLanguage
+        return localizedString("ai.defaultPrompt", for: language)
     }
 
     /// Get the default prompt for a specific language
     static func defaultAIPrompt(for language: AppLanguage) -> String {
-        let locale = language.locale ?? Locale.current
-        return String(localized: "ai.defaultPrompt", locale: locale)
+        return localizedString("ai.defaultPrompt", for: language)
+    }
+
+    /// Get a localized string for a specific language by loading from the appropriate .lproj bundle
+    private static func localizedString(_ key: String, for language: AppLanguage) -> String {
+        // For system default, use the standard localization
+        guard language != .system else {
+            return String(localized: String.LocalizationValue(key))
+        }
+
+        // Get the language code
+        let languageCode = language.rawValue
+
+        // Try to find the appropriate .lproj bundle
+        if let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            return bundle.localizedString(forKey: key, value: nil, table: "Localizable")
+        }
+
+        // Fallback to default localization
+        return String(localized: String.LocalizationValue(key))
     }
 
     /// Get all default prompts in all supported languages
     static var allDefaultPrompts: Set<String> {
         var prompts = Set<String>()
         for language in AppLanguage.allCases {
-            if let locale = language.locale {
-                prompts.insert(String(localized: "ai.defaultPrompt", locale: locale))
-            }
+            prompts.insert(localizedString("ai.defaultPrompt", for: language))
         }
-        // Also add system locale default
-        prompts.insert(String(localized: "ai.defaultPrompt"))
         return prompts
     }
 
@@ -524,44 +429,44 @@ class ZabbixAPIClient: ObservableObject {
     private var refreshTimer: Timer?
 
     init() {
-        // Initialize all stored properties first (before any didSet can fire)
+        // Load saved values from UserDefaults
         let savedRefreshInterval = UserDefaults.standard.double(forKey: "zabbix_refresh_interval")
-
-        self.serverURL = UserDefaults.standard.string(forKey: "zabbix_server_url") ?? "https://192.168.46.183:2443/api_jsonrpc.php"
-        self.username = UserDefaults.standard.string(forKey: "zabbix_username") ?? ""
-        self._refreshInterval = Published(initialValue: savedRefreshInterval == 0 ? 60 : savedRefreshInterval)
-        self.allowSelfSignedCerts = UserDefaults.standard.object(forKey: "zabbix_allow_self_signed") as? Bool ?? true
         let savedSortOrder = UserDefaults.standard.string(forKey: "problem_sort_order") ?? "criticality"
-        self.problemSortOrder = ProblemSortOrder(rawValue: savedSortOrder) ?? .criticality
+        let savedProvider = UserDefaults.standard.string(forKey: "ai_provider") ?? "ollama"
+        let savedProblemCount = UserDefaults.standard.integer(forKey: "widget_problem_count")
+
+        // Connection settings
+        serverURL = UserDefaults.standard.string(forKey: "zabbix_server_url") ?? "https://192.168.46.183:2443/api_jsonrpc.php"
+        username = UserDefaults.standard.string(forKey: "zabbix_username") ?? ""
+        refreshInterval = savedRefreshInterval == 0 ? 60 : savedRefreshInterval
+        allowSelfSignedCerts = UserDefaults.standard.object(forKey: "zabbix_allow_self_signed") as? Bool ?? true
+        problemSortOrder = ProblemSortOrder(rawValue: savedSortOrder) ?? .criticality
 
         // Severity Filter (menu bar app)
         if let filterData = UserDefaults.standard.data(forKey: "severity_filter"),
            let savedFilter = try? JSONDecoder().decode(SeverityFilter.self, from: filterData) {
-            self.severityFilter = savedFilter
-        } else {
-            self.severityFilter = SeverityFilter()
+            severityFilter = savedFilter
         }
 
         // Widget Severity Filter
         if let filterData = UserDefaults.standard.data(forKey: "widget_severity_filter"),
            let savedFilter = try? JSONDecoder().decode(WidgetSeverityFilter.self, from: filterData) {
-            self.widgetSeverityFilter = savedFilter
-        } else {
-            self.widgetSeverityFilter = WidgetSeverityFilter()
+            widgetSeverityFilter = savedFilter
         }
 
         // AI Configuration
-        let savedProvider = UserDefaults.standard.string(forKey: "ai_provider") ?? "ollama"
-        self.aiProvider = AIProvider(rawValue: savedProvider) ?? .ollama
-        self.ollamaURL = UserDefaults.standard.string(forKey: "ollama_url") ?? "http://192.168.200.246:11434"
-        self.ollamaModel = UserDefaults.standard.string(forKey: "ollama_model") ?? "mistral:7b"
-        self.openAIAPIKey = UserDefaults.standard.string(forKey: "openai_api_key") ?? ""
-        self.openAIModel = UserDefaults.standard.string(forKey: "openai_model") ?? "gpt-4o-mini"
-        self.anthropicAPIKey = UserDefaults.standard.string(forKey: "anthropic_api_key") ?? ""
-        self.anthropicModel = UserDefaults.standard.string(forKey: "anthropic_model") ?? "claude-3-5-haiku-latest"
-        self.customAIPrompt = UserDefaults.standard.string(forKey: "custom_ai_prompt") ?? ZabbixAPIClient.defaultAIPrompt
+        aiProvider = AIProvider(rawValue: savedProvider) ?? .ollama
+        ollamaURL = UserDefaults.standard.string(forKey: "ollama_url") ?? "http://192.168.200.246:11434"
+        ollamaModel = UserDefaults.standard.string(forKey: "ollama_model") ?? "mistral:7b"
+        openAIAPIKey = UserDefaults.standard.string(forKey: "openai_api_key") ?? ""
+        openAIModel = UserDefaults.standard.string(forKey: "openai_model") ?? "gpt-4o-mini"
+        anthropicAPIKey = UserDefaults.standard.string(forKey: "anthropic_api_key") ?? ""
+        anthropicModel = UserDefaults.standard.string(forKey: "anthropic_model") ?? "claude-3-5-haiku-latest"
+        customAIPrompt = UserDefaults.standard.string(forKey: "custom_ai_prompt") ?? ZabbixAPIClient.defaultAIPrompt
+        widgetProblemCount = savedProblemCount > 0 ? savedProblemCount : 6
 
         setupSession()
+        setupPersistenceSubscriptions()
 
         // Try to restore cached token
         if let cachedToken = KeychainHelper.getToken(for: serverURL) {
@@ -575,6 +480,131 @@ class ZabbixAPIClient: ObservableObject {
                 self?.startAutoRefresh()
             }
         }
+    }
+
+    /// Set up Combine subscriptions for persisting changes to UserDefaults
+    /// This approach avoids "Publishing changes from within view updates" warnings
+    /// by using dropFirst() to skip initial values and removeDuplicates() to prevent loops
+    private func setupPersistenceSubscriptions() {
+        // Simple string/value persistence
+        $serverURL
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "zabbix_server_url") }
+            .store(in: &cancellables)
+
+        $username
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "zabbix_username") }
+            .store(in: &cancellables)
+
+        $refreshInterval
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] value in
+                UserDefaults.standard.set(value, forKey: "zabbix_refresh_interval")
+                self?.setupRefreshTimer()
+            }
+            .store(in: &cancellables)
+
+        $allowSelfSignedCerts
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] value in
+                UserDefaults.standard.set(value, forKey: "zabbix_allow_self_signed")
+                self?.setupSession()
+            }
+            .store(in: &cancellables)
+
+        $problemSortOrder
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0.rawValue, forKey: "problem_sort_order") }
+            .store(in: &cancellables)
+
+        $severityFilter
+            .dropFirst()
+            .removeDuplicates()
+            .sink { value in
+                if let data = try? JSONEncoder().encode(value) {
+                    UserDefaults.standard.set(data, forKey: "severity_filter")
+                }
+            }
+            .store(in: &cancellables)
+
+        $widgetSeverityFilter
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] value in
+                if let data = try? JSONEncoder().encode(value) {
+                    UserDefaults.standard.set(data, forKey: "widget_severity_filter")
+                }
+                self?.saveDataForWidget()
+            }
+            .store(in: &cancellables)
+
+        // AI Configuration persistence
+        $aiProvider
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] value in
+                UserDefaults.standard.set(value.rawValue, forKey: "ai_provider")
+                self?.onAIProviderChanged()
+            }
+            .store(in: &cancellables)
+
+        $ollamaURL
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "ollama_url") }
+            .store(in: &cancellables)
+
+        $ollamaModel
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "ollama_model") }
+            .store(in: &cancellables)
+
+        $openAIAPIKey
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "openai_api_key") }
+            .store(in: &cancellables)
+
+        $openAIModel
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "openai_model") }
+            .store(in: &cancellables)
+
+        $anthropicAPIKey
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "anthropic_api_key") }
+            .store(in: &cancellables)
+
+        $anthropicModel
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "anthropic_model") }
+            .store(in: &cancellables)
+
+        $customAIPrompt
+            .dropFirst()
+            .removeDuplicates()
+            .sink { UserDefaults.standard.set($0, forKey: "custom_ai_prompt") }
+            .store(in: &cancellables)
+
+        $widgetProblemCount
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] value in
+                UserDefaults.standard.set(value, forKey: "widget_problem_count")
+                self?.saveDataForWidget()
+                WidgetCenter.shared.reloadAllTimelines()
+            }
+            .store(in: &cancellables)
     }
 
     private func setupSession() {
@@ -754,7 +784,8 @@ class ZabbixAPIClient: ObservableObject {
                 serverURL: serverURL,
                 isAuthenticated: isAuthenticated,
                 aiSummary: aiSummary,
-                severityFilter: widgetSeverityFilter
+                severityFilter: widgetSeverityFilter,
+                widgetProblemCount: widgetProblemCount
             )
             SharedDataManager.shared.saveData(sharedData)
         }
@@ -782,7 +813,8 @@ class ZabbixAPIClient: ObservableObject {
                 serverURL: serverURL,
                 isAuthenticated: isAuthenticated,
                 aiSummary: "",
-                severityFilter: widgetSeverityFilter
+                severityFilter: widgetSeverityFilter,
+                widgetProblemCount: widgetProblemCount
             )
             SharedDataManager.shared.saveData(sharedData)
             return
@@ -798,7 +830,8 @@ class ZabbixAPIClient: ObservableObject {
                 serverURL: serverURL,
                 isAuthenticated: isAuthenticated,
                 aiSummary: aiSummary,
-                severityFilter: widgetSeverityFilter
+                severityFilter: widgetSeverityFilter,
+                widgetProblemCount: widgetProblemCount
             )
             SharedDataManager.shared.saveData(sharedData)
             return
@@ -825,7 +858,12 @@ class ZabbixAPIClient: ObservableObject {
 
         do {
             let summary = try await callAIProvider(prompt: prompt)
-            aiSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+            var trimmedSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+            // Hard limit of 370 characters for UI display
+            if trimmedSummary.count > 370 {
+                trimmedSummary = String(trimmedSummary.prefix(367)) + "..."
+            }
+            aiSummary = trimmedSummary
         } catch {
             aiSummary = "Unable to generate summary"
         }
@@ -838,7 +876,8 @@ class ZabbixAPIClient: ObservableObject {
             serverURL: serverURL,
             isAuthenticated: isAuthenticated,
             aiSummary: aiSummary,
-            severityFilter: widgetSeverityFilter
+            severityFilter: widgetSeverityFilter,
+            widgetProblemCount: widgetProblemCount
         )
         SharedDataManager.shared.saveData(sharedData)
     }
@@ -847,7 +886,7 @@ class ZabbixAPIClient: ObservableObject {
         // Reset the problem signature to force regeneration
         lastProblemSignature = ""
 
-        // If AI is disabled, immediately clear the summary and update widget
+        // If AI is disabled, immediately clear the summary
         if aiProvider == .disabled {
             aiSummary = ""
         }

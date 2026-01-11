@@ -100,12 +100,9 @@ class HostIconManager: ObservableObject {
     ]
 
     private init() {
-        loadCustomIcons()
-    }
-
-    private func loadCustomIcons() {
+        // Load custom icons using _customIcons to bypass didSet during initialization
         if let data = UserDefaults.standard.dictionary(forKey: userDefaultsKey) as? [String: String] {
-            customIcons = data
+            _customIcons = Published(initialValue: data)
         }
     }
 

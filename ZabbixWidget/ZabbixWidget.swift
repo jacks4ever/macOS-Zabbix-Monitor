@@ -23,7 +23,7 @@ struct WidgetLanguageHelper {
 
 struct ZabbixProvider: TimelineProvider {
     func placeholder(in context: Context) -> ZabbixEntry {
-        ZabbixEntry(date: Date(), problemCount: 0, problems: [], aiSummary: "", isConfigured: true)
+        ZabbixEntry(date: Date(), problemCount: 0, problems: [], aiSummary: "", isConfigured: true, widgetProblemCount: 6)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (ZabbixEntry) -> Void) {
@@ -67,7 +67,8 @@ struct ZabbixProvider: TimelineProvider {
                 problemCount: filteredProblems.count,
                 problems: problems,
                 aiSummary: data.aiSummary,
-                isConfigured: true
+                isConfigured: true,
+                widgetProblemCount: data.widgetProblemCount
             )
         }
 
@@ -78,7 +79,8 @@ struct ZabbixProvider: TimelineProvider {
             problemCount: 0,
             problems: [],
             aiSummary: "",
-            isConfigured: true  // Always show as configured so we can see widget content
+            isConfigured: true,  // Always show as configured so we can see widget content
+            widgetProblemCount: 6
         )
     }
 }
@@ -122,6 +124,7 @@ struct ZabbixEntry: TimelineEntry {
     let problems: [WidgetProblem]
     let aiSummary: String
     let isConfigured: Bool
+    let widgetProblemCount: Int
 }
 
 // MARK: - Widget View
@@ -379,7 +382,7 @@ struct ZabbixWidgetEntryView: View {
                             return first.timestamp > second.timestamp
                         }
 
-                        let problemLimit = entry.aiSummary.isEmpty ? 6 : 3
+                        let problemLimit = entry.aiSummary.isEmpty ? entry.widgetProblemCount : 3
 
                         ForEach(sortedProblems.prefix(problemLimit)) { problem in
                             HStack(alignment: .top, spacing: 6) {
@@ -450,5 +453,5 @@ struct ZabbixWidget: Widget {
         WidgetProblem(id: "1", name: "High CPU usage", severity: 4, timestamp: Date()),
         WidgetProblem(id: "2", name: "Disk space low", severity: 3, timestamp: Date().addingTimeInterval(-60)),
         WidgetProblem(id: "3", name: "Memory warning", severity: 2, timestamp: Date().addingTimeInterval(-120))
-    ], aiSummary: "Server performance degraded - check CPU load and disk space on primary servers.", isConfigured: true)
+    ], aiSummary: "Server performance degraded - check CPU load and disk space on primary servers.", isConfigured: true, widgetProblemCount: 6)
 }

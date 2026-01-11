@@ -69,12 +69,13 @@ struct SharedZabbixData: Codable {
     let isAuthenticated: Bool
     let aiSummary: String
     let severityFilter: WidgetSeverityFilter
+    let widgetProblemCount: Int
 
     enum CodingKeys: String, CodingKey {
-        case problems, totalProblemCount, lastUpdate, serverURL, isAuthenticated, aiSummary, severityFilter
+        case problems, totalProblemCount, lastUpdate, serverURL, isAuthenticated, aiSummary, severityFilter, widgetProblemCount
     }
 
-    // Custom decoder for backwards compatibility - provides default severityFilter if missing
+    // Custom decoder for backwards compatibility - provides defaults if missing
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         problems = try container.decode([SharedProblem].self, forKey: .problems)
@@ -85,9 +86,11 @@ struct SharedZabbixData: Codable {
         aiSummary = try container.decode(String.self, forKey: .aiSummary)
         // Use default filter if not present (backwards compatibility)
         severityFilter = try container.decodeIfPresent(WidgetSeverityFilter.self, forKey: .severityFilter) ?? WidgetSeverityFilter()
+        // Use default problem count if not present (backwards compatibility)
+        widgetProblemCount = try container.decodeIfPresent(Int.self, forKey: .widgetProblemCount) ?? 6
     }
 
-    init(problems: [SharedProblem], totalProblemCount: Int, lastUpdate: Date, serverURL: String, isAuthenticated: Bool, aiSummary: String, severityFilter: WidgetSeverityFilter = WidgetSeverityFilter()) {
+    init(problems: [SharedProblem], totalProblemCount: Int, lastUpdate: Date, serverURL: String, isAuthenticated: Bool, aiSummary: String, severityFilter: WidgetSeverityFilter = WidgetSeverityFilter(), widgetProblemCount: Int = 6) {
         self.problems = problems
         self.totalProblemCount = totalProblemCount
         self.lastUpdate = lastUpdate
@@ -95,6 +98,7 @@ struct SharedZabbixData: Codable {
         self.isAuthenticated = isAuthenticated
         self.aiSummary = aiSummary
         self.severityFilter = severityFilter
+        self.widgetProblemCount = widgetProblemCount
     }
 
     static var empty: SharedZabbixData {
@@ -105,7 +109,8 @@ struct SharedZabbixData: Codable {
             serverURL: "",
             isAuthenticated: false,
             aiSummary: "",
-            severityFilter: WidgetSeverityFilter()
+            severityFilter: WidgetSeverityFilter(),
+            widgetProblemCount: 6
         )
     }
 }

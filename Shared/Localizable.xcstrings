@@ -17,6 +17,24 @@
         }
       }
     },
+    "3" : {
+
+    },
+    "4" : {
+
+    },
+    "5" : {
+
+    },
+    "6" : {
+
+    },
+    "7" : {
+
+    },
+    "8" : {
+
+    },
     "about.features" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -229,6 +247,59 @@
         }
       }
     },
+    "ai.defaultPrompt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analysiere diese Zabbix-Alarme und fasse gemeinsame Themen oder Muster zusammen. Halte die Antwort unter 370 Zeichen. Sei prägnant: maximal 2-3 kurze Sätze.\n\n{PROBLEM_LIST}\n\nSchweregrad-Aufschlüsselung: {SEVERITY_COUNTS}"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyze these Zabbix alerts and summarize common themes or patterns. Keep response under 370 characters total. Be concise: 2-3 short sentences maximum.\n\n{PROBLEM_LIST}\n\nSeverity breakdown: {SEVERITY_COUNTS}"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analiza estas alertas de Zabbix y resume temas o patrones comunes. Mantén la respuesta en menos de 370 caracteres. Sé conciso: máximo 2-3 oraciones cortas.\n\n{PROBLEM_LIST}\n\nDesglose por severidad: {SEVERITY_COUNTS}"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analysez ces alertes Zabbix et résumez les thèmes ou modèles communs. Gardez la réponse sous 370 caractères. Soyez concis: 2-3 phrases courtes maximum.\n\n{PROBLEM_LIST}\n\nRépartition par sévérité: {SEVERITY_COUNTS}"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これらのZabbixアラートを分析し、共通のテーマやパターンを要約してください。回答は370文字以内に。簡潔に: 最大2-3文の短い文章で。\n\n{PROBLEM_LIST}\n\n重大度の内訳: {SEVERITY_COUNTS}"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analizējiet šos Zabbix brīdinājumus un apkopojiet kopīgas tēmas vai modeļus. Atbilde jābūt zem 370 rakstzīmēm. Esiet kodolīgi: maksimums 2-3 īsi teikumi.\n\n{PROBLEM_LIST}\n\nSmaguma sadalījums: {SEVERITY_COUNTS}"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проанализируйте эти оповещения Zabbix и обобщите общие темы или закономерности. Ответ должен быть менее 370 символов. Будьте кратким: максимум 2-3 коротких предложения.\n\n{PROBLEM_LIST}\n\nРаспределение по критичности: {SEVERITY_COUNTS}"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分析这些Zabbix告警并总结共同主题或模式。回复保持在370个字符以内。简洁: 最多2-3个短句。\n\n{PROBLEM_LIST}\n\n严重程度分布: {SEVERITY_COUNTS}"
+          }
+        }
+      }
+    },
     "ai.disabled" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -331,59 +402,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AI摘要已禁用。小组件将显示实际的Zabbix问题。"
-          }
-        }
-      }
-    },
-    "ai.defaultPrompt" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analysiere diese Zabbix-Alarme und fasse gemeinsame Themen oder Muster zusammen. Halte die Antwort unter 150 Zeichen. Sei extrem prägnant: maximal 1-2 kurze Sätze.\n\n{PROBLEM_LIST}\n\nSchweregrad-Aufschlüsselung: {SEVERITY_COUNTS}"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analyze these Zabbix alerts and summarize common themes or patterns. Keep response under 150 characters total. Be extremely concise: 1-2 short sentences maximum.\n\n{PROBLEM_LIST}\n\nSeverity breakdown: {SEVERITY_COUNTS}"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analiza estas alertas de Zabbix y resume temas o patrones comunes. Mantén la respuesta en menos de 150 caracteres. Sé extremadamente conciso: máximo 1-2 oraciones cortas.\n\n{PROBLEM_LIST}\n\nDesglose por severidad: {SEVERITY_COUNTS}"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analysez ces alertes Zabbix et résumez les thèmes ou modèles communs. Gardez la réponse sous 150 caractères. Soyez extrêmement concis: 1-2 phrases courtes maximum.\n\n{PROBLEM_LIST}\n\nRépartition par sévérité: {SEVERITY_COUNTS}"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "これらのZabbixアラートを分析し、共通のテーマやパターンを要約してください。回答は150文字以内に。非常に簡潔に: 最大1-2文の短い文章で。\n\n{PROBLEM_LIST}\n\n重大度の内訳: {SEVERITY_COUNTS}"
-          }
-        },
-        "lv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analizējiet šos Zabbix brīdinājumus un apkopojiet kopīgas tēmas vai modeļus. Atbilde jābūt zem 150 rakstzīmēm. Esiet ārkārtīgi kodolīgi: maksimums 1-2 īsi teikumi.\n\n{PROBLEM_LIST}\n\nSmaguma sadalījums: {SEVERITY_COUNTS}"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проанализируйте эти оповещения Zabbix и обобщите общие темы или закономерности. Ответ должен быть менее 150 символов. Будьте крайне кратким: максимум 1-2 коротких предложения.\n\n{PROBLEM_LIST}\n\nРаспределение по критичности: {SEVERITY_COUNTS}"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "分析这些Zabbix告警并总结共同主题或模式。回复保持在150个字符以内。务必简洁: 最多1-2个短句。\n\n{PROBLEM_LIST}\n\n严重程度分布: {SEVERITY_COUNTS}"
           }
         }
       }
@@ -2367,6 +2385,59 @@
         }
       }
     },
+    "label.widgetProblemCount" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probleme im großen Widget"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Large Widget Problem Count"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problemas en widget grande"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problèmes du grand widget"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大ウィジェットの問題数"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problēmas lielajā logrīkā"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проблемы в большом виджете"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大组件问题数量"
+          }
+        }
+      }
+    },
     "language.followsSystemSettings" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2909,59 +2980,6 @@
         }
       }
     },
-    "section.customPrompt" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Benutzerdefinierte Eingabeaufforderung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Custom Prompt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prompt Personalizado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prompt Personnalisé"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "カスタムプロンプト"
-          }
-        },
-        "lv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pielāgots uzaicinājums"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пользовательский запрос"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自定义提示词"
-          }
-        }
-      }
-    },
     "section.appLanguage" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3064,6 +3082,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "认证"
+          }
+        }
+      }
+    },
+    "section.customPrompt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerdefinierte Eingabeaufforderung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom Prompt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prompt Personalizado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prompt Personnalisé"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムプロンプト"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pielāgots uzaicinājums"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пользовательский запрос"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义提示词"
           }
         }
       }

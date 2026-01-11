@@ -424,23 +424,36 @@ struct AISettingsView: View {
     @State private var testSuccess = false
     @State private var isTesting = false
 
+    /// Custom binding that defers writes to avoid "Publishing changes from within view updates"
+    private var aiProviderBinding: Binding<AIProvider> {
+        Binding(
+            get: { client.aiProvider },
+            set: { newValue in
+                // Defer the write to next run loop to avoid publishing during view update
+                DispatchQueue.main.async {
+                    client.aiProvider = newValue
+                }
+            }
+        )
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                // Provider Selection
-                GlassCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(titleKey: "section.aiProvider", icon: "brain")
+        VStack(spacing: 12) {
+            // Provider Selection
+            GlassCard {
+                VStack(alignment: .leading, spacing: 8) {
+                    SectionHeader(titleKey: "section.aiProvider", icon: "brain")
 
-                        Picker("", selection: $client.aiProvider) {
-                            ForEach(AIProvider.allCases, id: \.self) { provider in
-                                Text(provider.localizedName).tag(provider)
-                            }
+                    Picker("", selection: aiProviderBinding) {
+                        ForEach(AIProvider.allCases, id: \.self) { provider in
+                            Text(provider.localizedName).tag(provider)
                         }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
 
-                        if client.aiProvider == .disabled {
+                    if client.aiProvider == .disabled {
+                        VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 8) {
                                 Image(systemName: "info.circle")
                                     .foregroundStyle(.secondary)
@@ -448,244 +461,255 @@ struct AISettingsView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
-                            .padding(10)
-                            .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+
+                            HStack {
+                                Text("label.widgetProblemCount")
+                                    .font(.caption)
+                                Spacer()
+                                Picker("", selection: $client.widgetProblemCount) {
+                                    Text("3").tag(3)
+                                    Text("4").tag(4)
+                                    Text("5").tag(5)
+                                    Text("6").tag(6)
+                                    Text("7").tag(7)
+                                    Text("8").tag(8)
+                                }
+                                .pickerStyle(.menu)
+                                .frame(width: 60)
+                            }
                         }
+                        .padding(8)
+                        .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
                     }
                 }
+            }
 
-                // Provider Settings
-                if client.aiProvider == .ollama {
-                    GlassCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            SectionHeader(titleKey: "section.ollamaConfig", icon: "server.rack")
+            // Provider Settings
+            if client.aiProvider == .ollama {
+                GlassCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionHeader(titleKey: "section.ollamaConfig", icon: "server.rack")
 
-                            VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text("label.serverUrl")
-                                    .font(.subheadline)
+                                    .font(.caption)
                                     .foregroundStyle(.secondary)
                                 TextField("http://localhost:11434", text: $client.ollamaURL)
                                     .textFieldStyle(.plain)
-                                    .padding(8)
-                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+                                    .font(.caption)
+                                    .padding(6)
+                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
+                                        RoundedRectangle(cornerRadius: 6)
                                             .strokeBorder(.quaternary, lineWidth: 1)
                                     )
                             }
 
-                            VStack(alignment: .leading, spacing: 6) {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text("label.model")
-                                    .font(.subheadline)
+                                    .font(.caption)
                                     .foregroundStyle(.secondary)
                                 TextField("mistral:7b", text: $client.ollamaModel)
                                     .textFieldStyle(.plain)
-                                    .padding(8)
-                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .strokeBorder(.quaternary, lineWidth: 1)
-                                    )
-                                HStack(spacing: 4) {
-                                    Text("label.examples")
-                                    Text(verbatim: "mistral:7b, llama2, codellama")
-                                }
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                            }
-                        }
-                    }
-                }
-
-                if client.aiProvider == .openai {
-                    GlassCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            SectionHeader(titleKey: "section.openaiConfig", icon: "key")
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("label.apiKey")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                SecureField("sk-...", text: $client.openAIAPIKey)
-                                    .textFieldStyle(.plain)
-                                    .padding(8)
-                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .strokeBorder(.quaternary, lineWidth: 1)
-                                    )
-                            }
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("label.model")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                TextField("gpt-4o-mini", text: $client.openAIModel)
-                                    .textFieldStyle(.plain)
-                                    .padding(8)
-                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .strokeBorder(.quaternary, lineWidth: 1)
-                                    )
-                                HStack(spacing: 4) {
-                                    Text("label.examples")
-                                    Text(verbatim: "gpt-4o-mini, gpt-4o, gpt-4-turbo")
-                                }
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                            }
-                        }
-                    }
-                }
-
-                if client.aiProvider == .anthropic {
-                    GlassCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            SectionHeader(titleKey: "section.anthropicConfig", icon: "key")
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("label.apiKey")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                SecureField("sk-ant-...", text: $client.anthropicAPIKey)
-                                    .textFieldStyle(.plain)
-                                    .padding(8)
-                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .strokeBorder(.quaternary, lineWidth: 1)
-                                    )
-                            }
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("label.model")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                TextField("claude-3-5-haiku-latest", text: $client.anthropicModel)
-                                    .textFieldStyle(.plain)
-                                    .padding(8)
-                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .strokeBorder(.quaternary, lineWidth: 1)
-                                    )
-                                HStack(spacing: 4) {
-                                    Text("label.examples")
-                                    Text(verbatim: "claude-3-5-haiku-latest, claude-3-5-sonnet-latest")
-                                }
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                            }
-                        }
-                    }
-                }
-
-                // Custom Prompt
-                if client.aiProvider != .disabled {
-                    GlassCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                SectionHeader(titleKey: "section.customPrompt", icon: "text.bubble")
-                                Spacer()
-                                Button {
-                                    client.customAIPrompt = ZabbixAPIClient.defaultAIPrompt
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "arrow.counterclockwise")
-                                        Text("button.resetToDefault")
-                                    }
                                     .font(.caption)
-                                }
-                                .buttonStyle(.bordered)
-                                .controlSize(.small)
+                                    .padding(6)
+                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .strokeBorder(.quaternary, lineWidth: 1)
+                                    )
                             }
-
-                            TextEditor(text: $client.customAIPrompt)
-                                .font(.system(.caption, design: .monospaced))
-                                .frame(height: 120)
-                                .padding(4)
-                                .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .strokeBorder(.quaternary, lineWidth: 1)
-                                )
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("label.availablePlaceholders")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                HStack(spacing: 12) {
-                                    Text(verbatim: "{PROBLEM_LIST}")
-                                        .font(.system(.caption2, design: .monospaced))
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
-                                    Text(verbatim: "{SEVERITY_COUNTS}")
-                                        .font(.system(.caption2, design: .monospaced))
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
-                                    Text(verbatim: "{PROBLEM_COUNT}")
-                                        .font(.system(.caption2, design: .monospaced))
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Test AI
-                if client.aiProvider != .disabled {
-                    GlassCard {
-                        HStack {
-                            if let result = testResult {
-                                HStack(spacing: 6) {
-                                    Image(systemName: testSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                        .foregroundColor(testSuccess ? .green : .red)
-                                    Text(result)
-                                        .font(.subheadline)
-                                        .lineLimit(2)
-                                }
-                                .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                            }
-
-                            Spacer()
-
-                            Button {
-                                isTesting = true
-                                Task {
-                                    let result = await client.testAIProvider()
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        testSuccess = result.success
-                                        testResult = result.message
-                                    }
-                                    isTesting = false
-                                }
-                            } label: {
-                                HStack(spacing: 6) {
-                                    if isTesting {
-                                        ProgressView()
-                                            .scaleEffect(0.7)
-                                            .frame(width: 14, height: 14)
-                                    } else {
-                                        Image(systemName: "sparkles")
-                                    }
-                                    Text("button.testAI")
-                                }
-                                .font(.subheadline.weight(.medium))
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.regular)
-                            .disabled(isTesting)
+                            .frame(width: 120)
                         }
                     }
                 }
             }
-            .padding(20)
+
+            if client.aiProvider == .openai {
+                GlassCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionHeader(titleKey: "section.openaiConfig", icon: "key")
+
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("label.apiKey")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                SecureField("sk-...", text: $client.openAIAPIKey)
+                                    .textFieldStyle(.plain)
+                                    .font(.caption)
+                                    .padding(6)
+                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .strokeBorder(.quaternary, lineWidth: 1)
+                                    )
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("label.model")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                TextField("gpt-4o-mini", text: $client.openAIModel)
+                                    .textFieldStyle(.plain)
+                                    .font(.caption)
+                                    .padding(6)
+                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .strokeBorder(.quaternary, lineWidth: 1)
+                                    )
+                            }
+                            .frame(width: 120)
+                        }
+                    }
+                }
+            }
+
+            if client.aiProvider == .anthropic {
+                GlassCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionHeader(titleKey: "section.anthropicConfig", icon: "key")
+
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("label.apiKey")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                SecureField("sk-ant-...", text: $client.anthropicAPIKey)
+                                    .textFieldStyle(.plain)
+                                    .font(.caption)
+                                    .padding(6)
+                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .strokeBorder(.quaternary, lineWidth: 1)
+                                    )
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("label.model")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                TextField("claude-3-5-haiku-latest", text: $client.anthropicModel)
+                                    .textFieldStyle(.plain)
+                                    .font(.caption)
+                                    .padding(6)
+                                    .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .strokeBorder(.quaternary, lineWidth: 1)
+                                    )
+                            }
+                            .frame(width: 160)
+                        }
+                    }
+                }
+            }
+
+            // Custom Prompt
+            if client.aiProvider != .disabled {
+                GlassCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            SectionHeader(titleKey: "section.customPrompt", icon: "text.bubble")
+                            Spacer()
+                            Button {
+                                client.customAIPrompt = ZabbixAPIClient.defaultAIPrompt
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.counterclockwise")
+                                    Text("button.resetToDefault")
+                                }
+                                .font(.caption)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+
+                        TextEditor(text: $client.customAIPrompt)
+                            .font(.system(.caption2, design: .monospaced))
+                            .frame(height: 80)
+                            .padding(4)
+                            .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(.quaternary, lineWidth: 1)
+                            )
+
+                        HStack(spacing: 6) {
+                            Text("label.availablePlaceholders")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Text(verbatim: "{PROBLEM_LIST}")
+                                .font(.system(size: 9, design: .monospaced))
+                                .padding(.horizontal, 3)
+                                .padding(.vertical, 1)
+                                .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                            Text(verbatim: "{SEVERITY_COUNTS}")
+                                .font(.system(size: 9, design: .monospaced))
+                                .padding(.horizontal, 3)
+                                .padding(.vertical, 1)
+                                .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                            Text(verbatim: "{PROBLEM_COUNT}")
+                                .font(.system(size: 9, design: .monospaced))
+                                .padding(.horizontal, 3)
+                                .padding(.vertical, 1)
+                                .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                        }
+                    }
+                }
+            }
+
+            // Test AI
+            if client.aiProvider != .disabled {
+                GlassCard {
+                    HStack {
+                        if let result = testResult {
+                            HStack(spacing: 6) {
+                                Image(systemName: testSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                    .foregroundColor(testSuccess ? .green : .red)
+                                Text(result)
+                                    .font(.subheadline)
+                                    .lineLimit(2)
+                            }
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        }
+
+                        Spacer()
+
+                        Button {
+                            isTesting = true
+                            Task {
+                                let result = await client.testAIProvider()
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    testSuccess = result.success
+                                    testResult = result.message
+                                }
+                                isTesting = false
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                if isTesting {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                        .frame(width: 14, height: 14)
+                                } else {
+                                    Image(systemName: "sparkles")
+                                }
+                                Text("button.testAI")
+                            }
+                            .font(.subheadline.weight(.medium))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.regular)
+                        .disabled(isTesting)
+                    }
+                }
+            }
         }
+        .padding(20)
         .onChange(of: client.aiProvider) { _, _ in
             testResult = nil
         }

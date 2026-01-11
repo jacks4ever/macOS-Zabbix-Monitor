@@ -173,3 +173,48 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
 let timer = Timer(timeInterval: refreshInterval, repeats: true) { ... }
 RunLoop.main.add(timer, forMode: .common)
 ```
+
+### SwiftUI "Publishing changes from within view updates" Warning (IMPORTANT)
+
+**Problem**: When using `@Published` properties in an `ObservableObject` with SwiftUI Picker bindings, changing the picker value triggers the warning:
+```
+Publishing changes from within view updates is not allowed, this will cause undefined behavior.
+```
+
+This happens because:
+1. SwiftUI Picker directly modifies the `@Published` property via binding
+2. `@Published` publishes on `willSet` (before the value changes)
+3. Any Combine subscribers or side effects that modify other `@Published` properties fire synchronously during the view update cycle
+
+**Solution**: Use a custom binding that defers the property write to the next run loop:
+
+```swift
+struct AISettingsView: View {
+    @EnvironmentObject var client: ZabbixAPIClient
+
+    /// Custom binding that defers writes to avoid "Publishing changes from within view updates"
+    private var aiProviderBinding: Binding<AIProvider> {
+        Binding(
+            get: { client.aiProvider },
+            set: { newValue in
+                // Defer the write to next run loop to avoid publishing during view update
+                DispatchQueue.main.async {
+                    client.aiProvider = newValue
+                }
+            }
+        )
+    }
+
+    var body: some View {
+        Picker("", selection: aiProviderBinding) {  // Use custom binding, not $client.aiProvider
+            ForEach(AIProvider.allCases, id: \.self) { provider in
+                Text(provider.localizedName).tag(provider)
+            }
+        }
+    }
+}
+```
+
+**Why this works**: `DispatchQueue.main.async` schedules the property change for the next run loop iteration, after the current SwiftUI view update cycle completes. This breaks the synchronous chain that causes the warning.
+
+**When to use**: Apply this pattern to any Picker (or other control) binding to an `@Published` property that has Combine subscribers or side effects that modify other `@Published` properties.

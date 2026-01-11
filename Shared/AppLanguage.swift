@@ -21,7 +21,7 @@ enum AppLanguage: String, CaseIterable, Codable {
     /// Display name shown in Settings (in native language)
     var displayName: String {
         switch self {
-        case .system: return String(localized: "language.system", defaultValue: "System Default")
+        case .system: return AppLanguage.localizedSystemDefault()
         case .english: return "English"
         case .spanish: return "Español"
         case .french: return "Français"
@@ -31,6 +31,24 @@ enum AppLanguage: String, CaseIterable, Codable {
         case .latvian: return "Latviešu"
         case .russian: return "Русский"
         }
+    }
+
+    /// Get "System Default" localized to the currently selected app language
+    private static func localizedSystemDefault() -> String {
+        #if canImport(Combine)
+        let selectedLanguage = LanguageManager.shared.selectedLanguage
+        // If system is selected, use standard localization
+        guard selectedLanguage != .system else {
+            return String(localized: "language.system", defaultValue: "System Default")
+        }
+        // Load from the appropriate .lproj bundle
+        let languageCode = selectedLanguage.rawValue
+        if let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            return bundle.localizedString(forKey: "language.system", value: "System Default", table: "Localizable")
+        }
+        #endif
+        return String(localized: "language.system", defaultValue: "System Default")
     }
 
     /// Returns the Locale for this language, or nil for system default
@@ -59,27 +77,14 @@ class LanguageManager: ObservableObject {
     static let shared = LanguageManager()
 
     private let languageKey = "app_language"
+    private var cancellables = Set<AnyCancellable>()
 
     /// Use shared UserDefaults so widget can access the language preference
     private var sharedDefaults: UserDefaults? {
         UserDefaults(suiteName: userDefaultsSuite)
     }
 
-    @Published var selectedLanguage: AppLanguage = .system {
-        didSet {
-            // Defer to avoid "Publishing changes from within view updates" warning
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.sharedDefaults?.set(self.selectedLanguage.rawValue, forKey: self.languageKey)
-                self.sharedDefaults?.synchronize()
-
-                // Refresh widget when language changes
-                #if canImport(WidgetKit)
-                WidgetCenter.shared.reloadAllTimelines()
-                #endif
-            }
-        }
-    }
+    @Published var selectedLanguage: AppLanguage = .system
 
     /// The effective locale to use (selected language or system default)
     var effectiveLocale: Locale {
@@ -87,11 +92,27 @@ class LanguageManager: ObservableObject {
     }
 
     private init() {
-        // Load saved language preference after initialization
+        // Load saved language preference
         if let savedLanguage = sharedDefaults?.string(forKey: languageKey),
            let language = AppLanguage(rawValue: savedLanguage) {
-            self.selectedLanguage = language
+            selectedLanguage = language
         }
+
+        // Set up Combine subscription for persistence (after loading initial value)
+        $selectedLanguage
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] value in
+                guard let self = self else { return }
+                self.sharedDefaults?.set(value.rawValue, forKey: self.languageKey)
+                self.sharedDefaults?.synchronize()
+
+                // Refresh widget when language changes
+                #if canImport(WidgetKit)
+                WidgetCenter.shared.reloadAllTimelines()
+                #endif
+            }
+            .store(in: &cancellables)
     }
 }
 #endif
