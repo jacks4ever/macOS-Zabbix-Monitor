@@ -481,13 +481,10 @@ class ZabbixAPIClient: ObservableObject {
     }
     @Published var aiSummary: String = ""
 
-    static let defaultAIPrompt = """
-Analyze these Zabbix alerts and identify common themes or patterns. Keep response under 150 characters total. Be extremely concise - 1-2 short sentences max.
-
-{PROBLEM_LIST}
-
-Severity breakdown: {SEVERITY_COUNTS}
-"""
+    /// Default AI prompt - localized based on app language setting
+    static var defaultAIPrompt: String {
+        String(localized: "ai.defaultPrompt")
+    }
 
     private var authToken: String?
     private var lastProblemSignature: String = "" // Track problem IDs + filter to detect changes
