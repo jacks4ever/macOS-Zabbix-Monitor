@@ -324,6 +324,7 @@ struct SecuritySettingsView: View {
                             }
                         }
                         .toggleStyle(.switch)
+                        .tint(.blue)
                     }
                 }
 
