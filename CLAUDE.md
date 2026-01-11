@@ -1,4 +1,4 @@
-# ZabbixMenuBar
+# Zabbix Monitor
 
 A macOS SwiftUI menu bar application for monitoring Zabbix server alerts with an AI-powered desktop widget.
 
@@ -18,13 +18,15 @@ A macOS SwiftUI menu bar application for monitoring Zabbix server alerts with an
 ## Architecture
 
 ### Targets
-- `ZabbixMenuBar` - Main menu bar application
+- `ZabbixMenuBar` - Main menu bar application (builds as "Zabbix Monitor.app")
 - `ZabbixWidget` - WidgetKit extension for desktop widget
 
 ### Key Files
 - `ZabbixMenuBar/ZabbixAPIClient.swift` - Zabbix API client, Ollama integration
 - `ZabbixWidget/ZabbixWidget.swift` - Widget views (small, medium, large)
 - `Shared/SharedData.swift` - Data sharing between app and widget via App Groups
+- `Shared/AppLanguage.swift` - Language enum and manager for localization
+- `Shared/Localizable.xcstrings` - String Catalog with translations (8 languages)
 
 ## Critical Lessons Learned
 
@@ -87,9 +89,9 @@ DispatchQueue.main.async {
 2. Build: `Cmd+B`
 3. Copy to Applications:
    ```bash
-   cp -R ~/Library/Developer/Xcode/DerivedData/ZabbixMenuBar-*/Build/Products/Debug/ZabbixMenuBar.app /Applications/
+   cp -R ~/Library/Developer/Xcode/DerivedData/ZabbixMenuBar-*/Build/Products/Debug/"Zabbix Monitor.app" /Applications/
    ```
-4. Launch: `open /Applications/ZabbixMenuBar.app`
+4. Launch: `open "/Applications/Zabbix Monitor.app"`
 
 ## Debugging Widget Issues
 
