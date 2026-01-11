@@ -58,6 +58,35 @@ struct GlassCard<Content: View>: View {
     }
 }
 
+// MARK: - Custom Toggle Style (workaround for macOS tint bug)
+
+struct ColoredToggleStyle: ToggleStyle {
+    var onColor: Color = .blue
+    var offColor: Color = Color(nsColor: .separatorColor)
+
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+            Spacer()
+            Capsule()
+                .fill(configuration.isOn ? onColor : offColor)
+                .frame(width: 44, height: 24)
+                .overlay(
+                    Circle()
+                        .fill(.white)
+                        .shadow(radius: 1)
+                        .padding(2)
+                        .offset(x: configuration.isOn ? 10 : -10)
+                )
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        configuration.isOn.toggle()
+                    }
+                }
+        }
+    }
+}
+
 // MARK: - Section Header
 
 struct SectionHeader: View {
@@ -323,8 +352,7 @@ struct SecuritySettingsView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        .toggleStyle(.switch)
-                        .tint(.blue)
+                        .toggleStyle(ColoredToggleStyle(onColor: .blue))
                     }
                 }
 
