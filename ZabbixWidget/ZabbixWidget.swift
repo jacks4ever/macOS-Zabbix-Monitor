@@ -64,7 +64,7 @@ struct ZabbixProvider: TimelineProvider {
             }
             return ZabbixEntry(
                 date: Date(),
-                problemCount: filteredProblems.count,
+                problemCount: data.totalProblemCount,  // Use the total count from shared data
                 problems: problems,
                 aiSummary: data.aiSummary,
                 isConfigured: true,

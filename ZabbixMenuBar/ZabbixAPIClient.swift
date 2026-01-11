@@ -81,6 +81,20 @@ struct ZabbixTrigger: Codable {
     let value: String
 }
 
+struct ZabbixEvent: Codable {
+    let eventid: String
+    let acknowledged: String
+}
+
+struct ZabbixTriggerWithEvent: Codable {
+    let triggerid: String
+    let description: String
+    let priority: String
+    let lastchange: String
+    let value: String
+    let lastEvent: ZabbixEvent?
+}
+
 // MARK: - API Response Types
 
 struct ZabbixAPIResponse<T: Decodable>: Decodable {
@@ -777,9 +791,10 @@ class ZabbixAPIClient: ObservableObject {
             }
         } else {
             // Still save data to update timestamp, but use existing AI summary
+            let unacknowledgedCount = problems.filter { !$0.isAcknowledged }.count
             let sharedData = SharedZabbixData(
                 problems: Array(sharedProblems),
-                totalProblemCount: problems.count,
+                totalProblemCount: unacknowledgedCount,
                 lastUpdate: lastRefresh ?? Date(),
                 serverURL: serverURL,
                 isAuthenticated: isAuthenticated,
@@ -806,9 +821,10 @@ class ZabbixAPIClient: ObservableObject {
         // If AI is disabled, clear the summary so widget shows raw problems
         if aiProvider == .disabled {
             aiSummary = ""
+            let unacknowledgedCount = self.problems.filter { !$0.isAcknowledged }.count
             let sharedData = SharedZabbixData(
                 problems: Array(sharedProblems),
-                totalProblemCount: self.problems.count,
+                totalProblemCount: unacknowledgedCount,
                 lastUpdate: lastRefresh ?? Date(),
                 serverURL: serverURL,
                 isAuthenticated: isAuthenticated,
@@ -869,9 +885,10 @@ class ZabbixAPIClient: ObservableObject {
         }
 
         // Always save shared data (with or without AI summary)
+        let unacknowledgedCount = self.problems.filter { !$0.isAcknowledged }.count
         let sharedData = SharedZabbixData(
             problems: Array(sharedProblems),
-            totalProblemCount: self.problems.count,
+            totalProblemCount: unacknowledgedCount,
             lastUpdate: lastRefresh ?? Date(),
             serverURL: serverURL,
             isAuthenticated: isAuthenticated,
@@ -1035,6 +1052,7 @@ class ZabbixAPIClient: ObservableObject {
                 "filter": [
                     "value": 1  // Only triggers currently in PROBLEM state
                 ],
+                "selectLastEvent": ["eventid", "acknowledged"],  // Get the actual event ID
                 "sortfield": "lastchange",
                 "sortorder": "DESC",
                 "limit": 50,
@@ -1046,18 +1064,21 @@ class ZabbixAPIClient: ObservableObject {
             "id": 2
         ]
 
-        let response: ZabbixAPIResponse<[ZabbixTrigger]> = try await performRequest(payload: payload, useAuth: true)
+        let response: ZabbixAPIResponse<[ZabbixTriggerWithEvent]> = try await performRequest(payload: payload, useAuth: true)
 
         if let triggers = response.result {
             // Convert triggers to problems format
-            let problems = triggers.map { trigger in
-                ZabbixProblem(
-                    eventid: trigger.triggerid,
+            let problems = triggers.compactMap { trigger -> ZabbixProblem? in
+                // Use the actual event ID from lastEvent, not the trigger ID
+                guard let lastEvent = trigger.lastEvent else { return nil }
+
+                return ZabbixProblem(
+                    eventid: lastEvent.eventid,
                     objectid: trigger.triggerid,
                     name: trigger.description,
                     severity: trigger.priority,
                     clock: trigger.lastchange,
-                    acknowledged: "0"  // Triggers don't have acknowledgement status directly
+                    acknowledged: lastEvent.acknowledged
                 )
             }
             return problems
@@ -1093,12 +1114,14 @@ class ZabbixAPIClient: ObservableObject {
     func acknowledgeProblem(eventId: String, message: String = "Acknowledged via ZabbixMenuBar") async throws {
         guard authToken != nil else { return }
 
+        // Action flags: 1=close, 2=acknowledge, 4=message, 8=change severity
+        // We want to acknowledge (2) and add message (4) = 6
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
             "method": "event.acknowledge",
             "params": [
-                "eventids": eventId,
-                "action": 6,
+                "eventids": [eventId],  // Must be an array
+                "action": 6,  // 2 (acknowledge) + 4 (message)
                 "message": message
             ],
             "id": 4
@@ -1107,10 +1130,17 @@ class ZabbixAPIClient: ObservableObject {
         let response: ZabbixAPIResponse<AcknowledgeResult> = try await performRequest(payload: payload, useAuth: true)
 
         if let apiError = response.error {
+            print("Zabbix API Error: \(apiError.localizedDescription)")
             throw apiError
         }
 
+        if let result = response.result {
+            print("Acknowledgment successful: \(result)")
+        }
+
+        print("Refreshing data after acknowledgment...")
         await refreshData()
+        print("Data refreshed. New problem count: \(problems.count), Unacknowledged: \(problems.filter { !$0.isAcknowledged }.count)")
     }
 
     // MARK: - Network Helper

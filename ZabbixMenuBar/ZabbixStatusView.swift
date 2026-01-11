@@ -544,6 +544,7 @@ struct ProblemRowView: View {
     @EnvironmentObject var client: ZabbixAPIClient
     @State private var showAcknowledge = false
     @State private var isHovering = false
+    @State private var acknowledgementWindow: NSWindow?
 
     var body: some View {
         HStack(spacing: 8) {
@@ -585,7 +586,7 @@ struct ProblemRowView: View {
         .contextMenu {
             if !problem.isAcknowledged {
                 Button {
-                    showAcknowledge = true
+                    showAcknowledgeWindow()
                 } label: {
                     Label(String(localized: "button.acknowledge"), systemImage: "checkmark.circle")
                 }
@@ -596,10 +597,6 @@ struct ProblemRowView: View {
             } label: {
                 Label(String(localized: "menu.copyName"), systemImage: "doc.on.doc")
             }
-        }
-        .sheet(isPresented: $showAcknowledge) {
-            AcknowledgeSheet(problem: problem)
-                .environmentObject(client)
         }
     }
 
@@ -613,14 +610,33 @@ struct ProblemRowView: View {
         case .disaster: return .purple
         }
     }
+
+    private func showAcknowledgeWindow() {
+        let contentView = AcknowledgeSheet(problem: problem)
+            .environmentObject(client)
+
+        let hostingController = NSHostingController(rootView: contentView)
+
+        let window = NSWindow(contentViewController: hostingController)
+        window.styleMask = [.titled, .closable]
+        window.title = ""
+        window.level = .popUpMenu  // Higher than floating, same level as menu bar items
+        window.center()
+        window.isReleasedWhenClosed = false
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+
+        acknowledgementWindow = window
+    }
 }
 
 struct AcknowledgeSheet: View {
     let problem: ZabbixProblem
     @EnvironmentObject var client: ZabbixAPIClient
-    @Environment(\.dismiss) var dismiss
     @State private var message = ""
     @State private var isSubmitting = false
+    @State private var acknowledgementTask: Task<Void, Never>? = nil
 
     var body: some View {
         VStack(spacing: 20) {
@@ -666,20 +682,35 @@ struct AcknowledgeSheet: View {
             // Buttons
             HStack(spacing: 12) {
                 Button(String(localized: "button.cancel")) {
-                    dismiss()
+                    closeWindow()
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)
 
                 Button {
                     isSubmitting = true
-                    Task {
-                        try? await client.acknowledgeProblem(
-                            eventId: problem.eventid,
-                            message: message.isEmpty ? "Acknowledged via ZabbixMenuBar" : message
-                        )
-                        isSubmitting = false
-                        dismiss()
+                    // Capture references for detached task
+                    let apiClient = client
+                    let eventId = problem.eventid
+                    let ackMessage = message.isEmpty ? "Acknowledged via ZabbixMenuBar" : message
+
+                    // Use detached task to ensure acknowledgment completes even if view closes
+                    acknowledgementTask = Task.detached {
+                        do {
+                            print("Starting acknowledgment for event: \(eventId)")
+                            try await apiClient.acknowledgeProblem(
+                                eventId: eventId,
+                                message: ackMessage
+                            )
+                            print("Acknowledgment completed successfully")
+                        } catch {
+                            print("Acknowledgment error: \(error)")
+                        }
+
+                        await MainActor.run {
+                            isSubmitting = false
+                            closeWindow()
+                        }
                     }
                 } label: {
                     HStack(spacing: 6) {
@@ -699,6 +730,10 @@ struct AcknowledgeSheet: View {
         .padding(24)
         .frame(width: 340)
         .background(.ultraThinMaterial)
+    }
+
+    private func closeWindow() {
+        NSApp.keyWindow?.close()
     }
 }
 

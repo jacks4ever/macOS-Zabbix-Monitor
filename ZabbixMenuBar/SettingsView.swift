@@ -43,6 +43,13 @@ struct SettingsView: View {
         }
         .frame(width: 500, height: 520)
         .environment(\.locale, languageManager.effectiveLocale)
+        .onAppear {
+            // Make settings window appear on top of other windows
+            if let window = NSApp.windows.first(where: { $0.title.contains("Settings") || $0.identifier?.rawValue.contains("Settings") == true }) {
+                window.level = .floating
+                window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+            }
+        }
     }
 }
 
@@ -137,7 +144,9 @@ struct ConnectionSettingsView: View {
                             .foregroundStyle(.secondary)
                         TextField("https://your-zabbix-server/api_jsonrpc.php", text: $client.serverURL)
                             .textFieldStyle(.plain)
+                            .font(.body)
                             .padding(8)
+                            .frame(height: 36)
                             .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
@@ -151,7 +160,9 @@ struct ConnectionSettingsView: View {
                             .foregroundStyle(.secondary)
                         TextField(String(localized: "label.username"), text: $client.username)
                             .textFieldStyle(.plain)
+                            .font(.body)
                             .padding(8)
+                            .frame(height: 36)
                             .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
