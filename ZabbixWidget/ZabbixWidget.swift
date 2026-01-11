@@ -32,8 +32,17 @@ struct ZabbixProvider: TimelineProvider {
         if hasData {
             // Filter problems based on user's severity filter settings
             let filteredProblems = data.problems.filter { data.severityFilter.includes(severity: $0.severity) }
-            let problems = filteredProblems.map { p in
-                WidgetProblem(id: p.eventid, name: p.name, severity: p.severity)
+
+            // Sort by severity (highest first), then by timestamp (most recent first)
+            let sortedProblems = filteredProblems.sorted { a, b in
+                if a.severity != b.severity {
+                    return a.severity > b.severity
+                }
+                return a.timestamp > b.timestamp
+            }
+
+            let problems = sortedProblems.map { p in
+                WidgetProblem(id: p.eventid, name: p.name, severity: p.severity, timestamp: p.timestamp)
             }
             return ZabbixEntry(
                 date: Date(),
@@ -62,6 +71,7 @@ struct WidgetProblem: Identifiable {
     let id: String
     let name: String
     let severity: Int
+    let timestamp: Date
 
     var color: Color {
         switch severity {
@@ -403,8 +413,8 @@ struct ZabbixWidget: Widget {
     ZabbixWidget()
 } timeline: {
     ZabbixEntry(date: Date(), problemCount: 3, problems: [
-        WidgetProblem(id: "1", name: "High CPU usage", severity: 4),
-        WidgetProblem(id: "2", name: "Disk space low", severity: 3),
-        WidgetProblem(id: "3", name: "Memory warning", severity: 2)
+        WidgetProblem(id: "1", name: "High CPU usage", severity: 4, timestamp: Date()),
+        WidgetProblem(id: "2", name: "Disk space low", severity: 3, timestamp: Date().addingTimeInterval(-60)),
+        WidgetProblem(id: "3", name: "Memory warning", severity: 2, timestamp: Date().addingTimeInterval(-120))
     ], aiSummary: "Server performance degraded - check CPU load and disk space on primary servers.", isConfigured: true)
 }
