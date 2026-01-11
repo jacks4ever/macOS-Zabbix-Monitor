@@ -73,12 +73,13 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 ## Screenshots
 
 The menu bar icon shows the current problem count, color-coded by severity:
-- 🟣 Disaster (severity 5)
-- 🔴 High (severity 4)
-- 🟠 Average (severity 3)
-- 🟡 Warning (severity 2)
-- 🔵 Information (severity 1)
-- 🟢 No active problems
+
+🟣 Disaster (severity 5)
+🔴 High (severity 4)
+🟠 Average (severity 3)
+🟡 Warning (severity 2)
+🔵 Information (severity 1)
+🟢 No active problems
 
 ## Quick Start
 
