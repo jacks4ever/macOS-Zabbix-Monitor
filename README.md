@@ -1,4 +1,4 @@
-# macOS-Zabbix-Monitor
+# macOS Zabbix Monitor
 
 A macOS SwiftUI menu bar application for monitoring Zabbix server alerts with an AI-powered desktop widget.
 
