@@ -580,6 +580,62 @@ struct AISettingsView: View {
                     }
                 }
 
+                // Custom Prompt
+                if client.aiProvider != .disabled {
+                    GlassCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                SectionHeader(titleKey: "section.customPrompt", icon: "text.bubble")
+                                Spacer()
+                                Button {
+                                    client.customAIPrompt = ZabbixAPIClient.defaultAIPrompt
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "arrow.counterclockwise")
+                                        Text("button.resetToDefault")
+                                    }
+                                    .font(.caption)
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                            }
+
+                            TextEditor(text: $client.customAIPrompt)
+                                .font(.system(.caption, design: .monospaced))
+                                .frame(height: 120)
+                                .padding(4)
+                                .background(.background.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .strokeBorder(.quaternary, lineWidth: 1)
+                                )
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("label.availablePlaceholders")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                HStack(spacing: 12) {
+                                    Text(verbatim: "{PROBLEM_LIST}")
+                                        .font(.system(.caption2, design: .monospaced))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                                    Text(verbatim: "{SEVERITY_COUNTS}")
+                                        .font(.system(.caption2, design: .monospaced))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                                    Text(verbatim: "{PROBLEM_COUNT}")
+                                        .font(.system(.caption2, design: .monospaced))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Test AI
                 if client.aiProvider != .disabled {
                     GlassCard {

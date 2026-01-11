@@ -96,7 +96,7 @@ struct WidgetProblem: Identifiable {
         case 5: return .purple
         case 4: return .red
         case 3: return .orange
-        case 2: return .yellow
+        case 2: return Color(red: 0.8, green: 0.6, blue: 0.0)  // Darker yellow/gold for better contrast
         case 1: return .blue
         default: return .gray
         }
@@ -364,7 +364,8 @@ struct ZabbixWidgetEntryView: View {
                         Divider()
                     }
 
-                    // Show top 3 problems sorted by severity (highest first), then by time (latest first)
+                    // Show top problems sorted by severity (highest first), then by time (latest first)
+                    // Show 6 when AI is disabled, 3 when AI summary is present
                     VStack(alignment: .leading, spacing: 6) {
                         Text("widget.topProblems")
                             .font(.caption2)
@@ -378,7 +379,9 @@ struct ZabbixWidgetEntryView: View {
                             return first.timestamp > second.timestamp
                         }
 
-                        ForEach(sortedProblems.prefix(3)) { problem in
+                        let problemLimit = entry.aiSummary.isEmpty ? 6 : 3
+
+                        ForEach(sortedProblems.prefix(problemLimit)) { problem in
                             HStack(alignment: .top, spacing: 6) {
                                 Image(systemName: problem.severityIcon)
                                     .font(.system(size: 12))
@@ -392,8 +395,8 @@ struct ZabbixWidgetEntryView: View {
                             }
                         }
 
-                        if entry.problems.count > 3 {
-                            Text(verbatim: "+ \(entry.problems.count - 3) \(String(localized: "widget.more"))")
+                        if entry.problems.count > problemLimit {
+                            Text(verbatim: "+ \(entry.problems.count - problemLimit) \(String(localized: "widget.more"))")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
@@ -415,7 +418,7 @@ struct ZabbixWidgetEntryView: View {
         case 5: return .purple
         case 4: return .red
         case 3: return .orange
-        case 2: return .yellow
+        case 2: return Color(red: 0.8, green: 0.6, blue: 0.0)  // Darker yellow/gold for better contrast
         case 1: return .blue
         default: return .gray
         }

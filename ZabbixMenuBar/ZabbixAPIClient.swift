@@ -358,13 +358,19 @@ class ZabbixAPIClient: ObservableObject {
     @Published var refreshInterval: TimeInterval = 60 {
         didSet {
             UserDefaults.standard.set(refreshInterval, forKey: "zabbix_refresh_interval")
-            setupRefreshTimer()
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async { [weak self] in
+                self?.setupRefreshTimer()
+            }
         }
     }
     @Published var allowSelfSignedCerts: Bool = true {
         didSet {
             UserDefaults.standard.set(allowSelfSignedCerts, forKey: "zabbix_allow_self_signed")
-            setupSession()
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async { [weak self] in
+                self?.setupSession()
+            }
         }
     }
     @Published var problemSortOrder: ProblemSortOrder {
@@ -384,8 +390,10 @@ class ZabbixAPIClient: ObservableObject {
             if let data = try? JSONEncoder().encode(widgetSeverityFilter) {
                 UserDefaults.standard.set(data, forKey: "widget_severity_filter")
             }
-            // Save data immediately with new filter (don't wait for full refresh)
-            saveDataForWidget()
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async { [weak self] in
+                self?.saveDataForWidget()
+            }
         }
     }
 
@@ -393,8 +401,10 @@ class ZabbixAPIClient: ObservableObject {
     @Published var aiProvider: AIProvider {
         didSet {
             UserDefaults.standard.set(aiProvider.rawValue, forKey: "ai_provider")
-            // Trigger widget data update when AI provider changes
-            onAIProviderChanged()
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async { [weak self] in
+                self?.onAIProviderChanged()
+            }
         }
     }
     @Published var ollamaURL: String {
@@ -427,7 +437,20 @@ class ZabbixAPIClient: ObservableObject {
             UserDefaults.standard.set(anthropicModel, forKey: "anthropic_model")
         }
     }
+    @Published var customAIPrompt: String {
+        didSet {
+            UserDefaults.standard.set(customAIPrompt, forKey: "custom_ai_prompt")
+        }
+    }
     @Published var aiSummary: String = ""
+
+    static let defaultAIPrompt = """
+Analyze these Zabbix alerts and identify common themes or patterns. Keep response under 150 characters total. Be extremely concise - 1-2 short sentences max.
+
+{PROBLEM_LIST}
+
+Severity breakdown: {SEVERITY_COUNTS}
+"""
 
     private var authToken: String?
     private var lastProblemSignature: String = "" // Track problem IDs + filter to detect changes
@@ -471,6 +494,7 @@ class ZabbixAPIClient: ObservableObject {
         self.openAIModel = UserDefaults.standard.string(forKey: "openai_model") ?? "gpt-4o-mini"
         self.anthropicAPIKey = UserDefaults.standard.string(forKey: "anthropic_api_key") ?? ""
         self.anthropicModel = UserDefaults.standard.string(forKey: "anthropic_model") ?? "claude-3-5-haiku-latest"
+        self.customAIPrompt = UserDefaults.standard.string(forKey: "custom_ai_prompt") ?? ZabbixAPIClient.defaultAIPrompt
 
         setupSession()
 
@@ -642,10 +666,12 @@ class ZabbixAPIClient: ObservableObject {
             widgetSeverityFilter.includes(severity: problem.severity)
         }
 
-        // Create a signature from problem IDs + filter settings to detect any changes
-        let problemIds = filteredProblems.map { $0.eventid }.sorted().joined(separator: ",")
+        // Create a signature from unique problem names + filter settings to detect new problems
+        // Using names (not IDs) ensures we only regenerate AI summary when there's a genuinely new problem,
+        // not when the same problem is re-reported with a new event ID
+        let uniqueProblemNames = Set(filteredProblems.map { $0.name }).sorted().joined(separator: "|")
         let filterSignature = "\(widgetSeverityFilter.enabledLevels.sorted())"
-        let currentSignature = "\(problemIds)|\(filterSignature)"
+        let currentSignature = "\(uniqueProblemNames)|\(filterSignature)"
 
         // Regenerate AI summary if problems or filter changed
         if currentSignature != lastProblemSignature {
@@ -713,26 +739,24 @@ class ZabbixAPIClient: ObservableObject {
             return
         }
 
-        // Group problems by severity for a compact summary
-        var severityCounts: [String: Int] = [:]
-        var topIssues: [String] = []
+        // Build a list of all problem names for theme analysis
+        let problemNames = problems.map { $0.name }
 
+        // Group problems by severity for context
+        var severityCounts: [String: Int] = [:]
         for p in problems {
             severityCounts[p.severityName, default: 0] += 1
-            if topIssues.count < 3 && p.severity >= 3 {
-                topIssues.append(p.name)
-            }
         }
-
-        // Build compact context (not individual items)
         let countSummary = severityCounts.map { "\($0.value) \($0.key)" }.joined(separator: ", ")
-        let topIssuesSummary = topIssues.isEmpty ? "" : "Top issues: \(topIssues.joined(separator: "; "))"
 
-        let prompt = """
-        \(problems.count) alerts: \(countSummary). \(topIssuesSummary)
+        // Send all problem names to the AI for theme detection
+        let problemList = problemNames.enumerated().map { "\($0.offset + 1). \($0.element)" }.joined(separator: "\n")
 
-        Summarize in 1-2 sentences max. What's affected and what to do. No lists.
-        """
+        // Build prompt from custom template with placeholder substitution
+        let prompt = customAIPrompt
+            .replacingOccurrences(of: "{PROBLEM_LIST}", with: problemList)
+            .replacingOccurrences(of: "{SEVERITY_COUNTS}", with: countSummary)
+            .replacingOccurrences(of: "{PROBLEM_COUNT}", with: "\(problems.count)")
 
         do {
             let summary = try await callAIProvider(prompt: prompt)
@@ -792,7 +816,7 @@ class ZabbixAPIClient: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 60
 
-        let ollamaRequest = OllamaRequest(model: ollamaModel, prompt: prompt, stream: false, options: OllamaOptions(num_predict: 100))
+        let ollamaRequest = OllamaRequest(model: ollamaModel, prompt: prompt, stream: false, options: OllamaOptions(num_predict: 80))
         request.httpBody = try JSONEncoder().encode(ollamaRequest)
 
         let (data, response) = try await session.data(for: request)
@@ -823,7 +847,7 @@ class ZabbixAPIClient: ObservableObject {
         let openAIRequest = OpenAIRequest(
             model: openAIModel,
             messages: [OpenAIMessage(role: "user", content: prompt)],
-            max_tokens: 100
+            max_tokens: 80
         )
         request.httpBody = try JSONEncoder().encode(openAIRequest)
 
@@ -860,7 +884,7 @@ class ZabbixAPIClient: ObservableObject {
 
         let anthropicRequest = AnthropicRequest(
             model: anthropicModel,
-            max_tokens: 100,
+            max_tokens: 80,
             messages: [AnthropicMessage(role: "user", content: prompt)]
         )
         request.httpBody = try JSONEncoder().encode(anthropicRequest)
