@@ -393,6 +393,8 @@ class ZabbixAPIClient: ObservableObject {
     @Published var aiProvider: AIProvider {
         didSet {
             UserDefaults.standard.set(aiProvider.rawValue, forKey: "ai_provider")
+            // Trigger widget data update when AI provider changes
+            onAIProviderChanged()
         }
     }
     @Published var ollamaURL: String {
@@ -750,6 +752,19 @@ class ZabbixAPIClient: ObservableObject {
             severityFilter: widgetSeverityFilter
         )
         SharedDataManager.shared.saveData(sharedData)
+    }
+
+    private func onAIProviderChanged() {
+        // Reset the problem signature to force regeneration
+        lastProblemSignature = ""
+
+        // If AI is disabled, immediately clear the summary and update widget
+        if aiProvider == .disabled {
+            aiSummary = ""
+        }
+
+        // Trigger a widget data refresh with the new AI setting
+        saveDataForWidget()
     }
 
     // MARK: - AI Provider Methods

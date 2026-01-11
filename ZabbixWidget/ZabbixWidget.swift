@@ -255,13 +255,14 @@ struct ZabbixWidgetEntryView: View {
                             .fontWeight(.semibold)
                             .foregroundColor(.secondary)
                         ForEach(entry.problems.prefix(3)) { problem in
-                            HStack(spacing: 4) {
+                            HStack(alignment: .top, spacing: 4) {
                                 Circle()
                                     .fill(problem.color)
                                     .frame(width: 6, height: 6)
+                                    .padding(.top, 4)
                                 Text(verbatim: problem.name)
                                     .font(.caption2)
-                                    .lineLimit(1)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                         }
                     }
@@ -371,14 +372,15 @@ struct ZabbixWidgetEntryView: View {
                             .foregroundColor(.secondary)
 
                         ForEach(entry.problems.prefix(5)) { problem in
-                            HStack(spacing: 6) {
+                            HStack(alignment: .top, spacing: 6) {
                                 Image(systemName: problem.severityIcon)
                                     .font(.system(size: 12))
                                     .foregroundColor(problem.color)
                                     .frame(width: 14)
+                                    .padding(.top, 2)
                                 Text(verbatim: problem.name)
                                     .font(.caption)
-                                    .lineLimit(1)
+                                    .fixedSize(horizontal: false, vertical: true)
                                 Spacer()
                             }
                         }
