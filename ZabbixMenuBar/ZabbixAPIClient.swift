@@ -347,52 +347,67 @@ class ZabbixAPIClient: ObservableObject {
     // Configuration
     @Published var serverURL: String {
         didSet {
-            UserDefaults.standard.set(serverURL, forKey: "zabbix_server_url")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.serverURL, forKey: "zabbix_server_url")
+            }
         }
     }
     @Published var username: String {
         didSet {
-            UserDefaults.standard.set(username, forKey: "zabbix_username")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.username, forKey: "zabbix_username")
+            }
         }
     }
     @Published var refreshInterval: TimeInterval = 60 {
         didSet {
-            UserDefaults.standard.set(refreshInterval, forKey: "zabbix_refresh_interval")
             // Defer to avoid "Publishing changes from within view updates" warning
             DispatchQueue.main.async { [weak self] in
-                self?.setupRefreshTimer()
+                guard let self = self else { return }
+                UserDefaults.standard.set(self.refreshInterval, forKey: "zabbix_refresh_interval")
+                self.setupRefreshTimer()
             }
         }
     }
     @Published var allowSelfSignedCerts: Bool = true {
         didSet {
-            UserDefaults.standard.set(allowSelfSignedCerts, forKey: "zabbix_allow_self_signed")
             // Defer to avoid "Publishing changes from within view updates" warning
             DispatchQueue.main.async { [weak self] in
-                self?.setupSession()
+                guard let self = self else { return }
+                UserDefaults.standard.set(self.allowSelfSignedCerts, forKey: "zabbix_allow_self_signed")
+                self.setupSession()
             }
         }
     }
     @Published var problemSortOrder: ProblemSortOrder {
         didSet {
-            UserDefaults.standard.set(problemSortOrder.rawValue, forKey: "problem_sort_order")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.problemSortOrder.rawValue, forKey: "problem_sort_order")
+            }
         }
     }
     @Published var severityFilter: SeverityFilter {
         didSet {
-            if let data = try? JSONEncoder().encode(severityFilter) {
-                UserDefaults.standard.set(data, forKey: "severity_filter")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                if let data = try? JSONEncoder().encode(self.severityFilter) {
+                    UserDefaults.standard.set(data, forKey: "severity_filter")
+                }
             }
         }
     }
     @Published var widgetSeverityFilter: WidgetSeverityFilter {
         didSet {
-            if let data = try? JSONEncoder().encode(widgetSeverityFilter) {
-                UserDefaults.standard.set(data, forKey: "widget_severity_filter")
-            }
             // Defer to avoid "Publishing changes from within view updates" warning
             DispatchQueue.main.async { [weak self] in
-                self?.saveDataForWidget()
+                guard let self = self else { return }
+                if let data = try? JSONEncoder().encode(self.widgetSeverityFilter) {
+                    UserDefaults.standard.set(data, forKey: "widget_severity_filter")
+                }
+                self.saveDataForWidget()
             }
         }
     }
@@ -400,46 +415,68 @@ class ZabbixAPIClient: ObservableObject {
     // AI Configuration
     @Published var aiProvider: AIProvider {
         didSet {
-            UserDefaults.standard.set(aiProvider.rawValue, forKey: "ai_provider")
             // Defer to avoid "Publishing changes from within view updates" warning
             DispatchQueue.main.async { [weak self] in
-                self?.onAIProviderChanged()
+                guard let self = self else { return }
+                UserDefaults.standard.set(self.aiProvider.rawValue, forKey: "ai_provider")
+                self.onAIProviderChanged()
             }
         }
     }
     @Published var ollamaURL: String {
         didSet {
-            UserDefaults.standard.set(ollamaURL, forKey: "ollama_url")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.ollamaURL, forKey: "ollama_url")
+            }
         }
     }
     @Published var ollamaModel: String {
         didSet {
-            UserDefaults.standard.set(ollamaModel, forKey: "ollama_model")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.ollamaModel, forKey: "ollama_model")
+            }
         }
     }
     @Published var openAIAPIKey: String {
         didSet {
-            UserDefaults.standard.set(openAIAPIKey, forKey: "openai_api_key")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.openAIAPIKey, forKey: "openai_api_key")
+            }
         }
     }
     @Published var openAIModel: String {
         didSet {
-            UserDefaults.standard.set(openAIModel, forKey: "openai_model")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.openAIModel, forKey: "openai_model")
+            }
         }
     }
     @Published var anthropicAPIKey: String {
         didSet {
-            UserDefaults.standard.set(anthropicAPIKey, forKey: "anthropic_api_key")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.anthropicAPIKey, forKey: "anthropic_api_key")
+            }
         }
     }
     @Published var anthropicModel: String {
         didSet {
-            UserDefaults.standard.set(anthropicModel, forKey: "anthropic_model")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.anthropicModel, forKey: "anthropic_model")
+            }
         }
     }
     @Published var customAIPrompt: String {
         didSet {
-            UserDefaults.standard.set(customAIPrompt, forKey: "custom_ai_prompt")
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async {
+                UserDefaults.standard.set(self.customAIPrompt, forKey: "custom_ai_prompt")
+            }
         }
     }
     @Published var aiSummary: String = ""

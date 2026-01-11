@@ -67,15 +67,17 @@ class LanguageManager: ObservableObject {
 
     @Published var selectedLanguage: AppLanguage = .system {
         didSet {
-            sharedDefaults?.set(selectedLanguage.rawValue, forKey: languageKey)
-            sharedDefaults?.synchronize()
+            // Defer to avoid "Publishing changes from within view updates" warning
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.sharedDefaults?.set(self.selectedLanguage.rawValue, forKey: self.languageKey)
+                self.sharedDefaults?.synchronize()
 
-            // Refresh widget when language changes
-            #if canImport(WidgetKit)
-            DispatchQueue.main.async {
+                // Refresh widget when language changes
+                #if canImport(WidgetKit)
                 WidgetCenter.shared.reloadAllTimelines()
+                #endif
             }
-            #endif
         }
     }
 
