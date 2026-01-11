@@ -8,7 +8,7 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-![Problems View](ZabbixMonitorScreenshots/zabbix-problems-menubar-ui-view.png)
+<img src="ZabbixMonitorScreenshots/zabbix-problems-menubar-ui-view.png" width="50%">
 
 ## Why Use This?
 
@@ -38,11 +38,11 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 - **Problem Badges**: Click on problem count badges to see detailed error information
 - **Flexible Sorting**: Sort hosts alphabetically or by problem severity (bidirectional)
 
-![Hosts View](ZabbixMonitorScreenshots/zabbix-hosts-menubar-ui-view.png)
+<img src="ZabbixMonitorScreenshots/zabbix-hosts-menubar-ui-view.png" width="50%">
 
 *Right-click any host to assign a custom icon:*
 
-![Custom Host Icon](ZabbixMonitorScreenshots/zabbix-hosts-add-user-icon-context.png)
+<img src="ZabbixMonitorScreenshots/zabbix-hosts-add-user-icon-context.png" width="50%">
 
 ### Desktop Widget
 - **Multiple Sizes**: Small, Medium, and Large widget options
@@ -50,11 +50,11 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 - **Problem List**: Shows top problems with severity icons when AI is disabled
 - **Real-time Updates**: Syncs with menu bar app via App Groups
 
-![Widget with AI Summary](ZabbixMonitorScreenshots/zabbix-white-card-summary.png)
+<img src="ZabbixMonitorScreenshots/zabbix-white-card-summary.png" width="50%">
 
 *Medium widget in light mode:*
 
-![Medium Widget Light Mode](ZabbixMonitorScreenshots/zabbix-medium-widget-light-mode.png)
+<img src="ZabbixMonitorScreenshots/zabbix-medium-widget-light-mode.png" width="50%">
 
 ### AI Integration
 - **Multiple Providers**:
@@ -66,7 +66,7 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 - **Custom Prompts**: Customize the AI prompt with placeholders for problem data
 - **Test Connection**: Verify AI provider connectivity from Settings
 
-![AI Settings with Custom Prompt](ZabbixMonitorScreenshots/zabbix-settings-ai-prompt-view.png)
+<img src="ZabbixMonitorScreenshots/zabbix-settings-ai-prompt-view.png" width="50%">
 
 ### Filtering & Customization
 - **Severity Filtering**: Independent filters for menu bar and widget
@@ -84,7 +84,7 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 - **Language Selection**: Choose your preferred language in Settings
 - **Full UI Translation**: All menus, settings, severity labels, and widget text are localized
 
-![About View](ZabbixMonitorScreenshots/zabbix-about-menubar-ui-view.png)
+<img src="ZabbixMonitorScreenshots/zabbix-about-menubar-ui-view.png" width="50%">
 
 ## Severity Colors
 
@@ -177,7 +177,7 @@ All settings are configurable through the app's Settings panel (accessible via t
 3. Search for "Zabbix"
 4. Drag the widget to your desktop (available in Small, Medium, and Large sizes)
 
-![Widget Gallery](ZabbixMonitorScreenshots/zabbix-widget-gallery-view.png)
+<img src="ZabbixMonitorScreenshots/zabbix-widget-gallery-view.png" width="50%">
 
 ## Technical Notes
 
