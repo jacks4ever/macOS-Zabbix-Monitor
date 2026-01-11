@@ -31,6 +31,7 @@ struct SettingsView: View {
                 }
 
             LanguageSettingsView()
+                .environmentObject(client)
                 .tabItem {
                     Label("tab.language", systemImage: "globe")
                 }
@@ -694,6 +695,7 @@ struct AISettingsView: View {
 // MARK: - Language Settings
 
 struct LanguageSettingsView: View {
+    @EnvironmentObject var client: ZabbixAPIClient
     @ObservedObject var languageManager = LanguageManager.shared
 
     var body: some View {
@@ -708,6 +710,8 @@ struct LanguageSettingsView: View {
                             isSelected: languageManager.selectedLanguage == language
                         ) {
                             languageManager.selectedLanguage = language
+                            // Update AI prompt to new language if it's still a default prompt
+                            client.updatePromptForLanguageChange()
                         }
                     }
                 }

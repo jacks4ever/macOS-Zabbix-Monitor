@@ -486,6 +486,37 @@ class ZabbixAPIClient: ObservableObject {
         String(localized: "ai.defaultPrompt")
     }
 
+    /// Get the default prompt for a specific language
+    static func defaultAIPrompt(for language: AppLanguage) -> String {
+        let locale = language.locale ?? Locale.current
+        return String(localized: "ai.defaultPrompt", locale: locale)
+    }
+
+    /// Get all default prompts in all supported languages
+    static var allDefaultPrompts: Set<String> {
+        var prompts = Set<String>()
+        for language in AppLanguage.allCases {
+            if let locale = language.locale {
+                prompts.insert(String(localized: "ai.defaultPrompt", locale: locale))
+            }
+        }
+        // Also add system locale default
+        prompts.insert(String(localized: "ai.defaultPrompt"))
+        return prompts
+    }
+
+    /// Check if a prompt is one of the default prompts (in any language)
+    static func isDefaultPrompt(_ prompt: String) -> Bool {
+        allDefaultPrompts.contains(prompt)
+    }
+
+    /// Update the AI prompt to the current language's default (if it was a default prompt)
+    func updatePromptForLanguageChange() {
+        if ZabbixAPIClient.isDefaultPrompt(customAIPrompt) {
+            customAIPrompt = ZabbixAPIClient.defaultAIPrompt
+        }
+    }
+
     private var authToken: String?
     private var lastProblemSignature: String = "" // Track problem IDs + filter to detect changes
     private var session: URLSession!

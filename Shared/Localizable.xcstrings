@@ -76,49 +76,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mit Liebe aus Colorado, USA"
+            "value" : "Mit ❤️ aus Colorado, USA"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Made with love in Colorado, USA"
+            "value" : "Made with ❤️ in Colorado, USA"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hecho con amor en Colorado, USA"
+            "value" : "Hecho con ❤️ en Colorado, USA"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fait avec amour au Colorado, USA"
+            "value" : "Fait avec ❤️ au Colorado, USA"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "コロラド州からお届け"
+            "value" : "❤️ コロラド州からお届け"
           }
         },
         "lv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Veidots ar mīlestību Kolorādo, ASV"
+            "value" : "Veidots ar ❤️ Kolorādo, ASV"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сделано с любовью в Колорадо, США"
+            "value" : "Сделано с ❤️ в Колорадо, США"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "用爱在科罗拉多州制作"
+            "value" : "用 ❤️ 在科罗拉多州制作"
           }
         }
       }
@@ -182,49 +182,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version 1.1"
+            "value" : "Version 1.1.1"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version 1.1"
+            "value" : "Version 1.1.1"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version 1.1"
+            "value" : "Version 1.1.1"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version 1.1"
+            "value" : "Version 1.1.1"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バージョン 1.1"
+            "value" : "バージョン 1.1.1"
           }
         },
         "lv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Versija 1.1"
+            "value" : "Versija 1.1.1"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Версия 1.1"
+            "value" : "Версия 1.1.1"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "版本 1.1"
+            "value" : "版本 1.1.1"
           }
         }
       }
