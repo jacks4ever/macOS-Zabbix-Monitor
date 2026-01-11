@@ -364,14 +364,21 @@ struct ZabbixWidgetEntryView: View {
                         Divider()
                     }
 
-                    // Always show top 5 problems with severity icons
+                    // Show top 3 problems sorted by severity (highest first), then by time (latest first)
                     VStack(alignment: .leading, spacing: 6) {
                         Text("widget.topProblems")
                             .font(.caption2)
                             .fontWeight(.semibold)
                             .foregroundColor(.secondary)
 
-                        ForEach(entry.problems.prefix(5)) { problem in
+                        let sortedProblems = entry.problems.sorted { first, second in
+                            if first.severity != second.severity {
+                                return first.severity > second.severity
+                            }
+                            return first.timestamp > second.timestamp
+                        }
+
+                        ForEach(sortedProblems.prefix(3)) { problem in
                             HStack(alignment: .top, spacing: 6) {
                                 Image(systemName: problem.severityIcon)
                                     .font(.system(size: 12))
@@ -385,8 +392,8 @@ struct ZabbixWidgetEntryView: View {
                             }
                         }
 
-                        if entry.problems.count > 5 {
-                            Text(verbatim: "+ \(entry.problems.count - 5) \(String(localized: "widget.more"))")
+                        if entry.problems.count > 3 {
+                            Text(verbatim: "+ \(entry.problems.count - 3) \(String(localized: "widget.more"))")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
