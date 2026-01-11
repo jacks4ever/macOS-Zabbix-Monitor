@@ -1,10 +1,22 @@
 # macOS Zabbix Monitor
 
-A macOS SwiftUI menu bar application for monitoring Zabbix server alerts with an AI-powered desktop widget.
+**The first native macOS menu bar app for Zabbix monitoring.**
+
+Stop switching to browser tabs to check your Zabbix alerts. Get real-time problem counts in your menu bar, AI-powered summaries in a desktop widget, and acknowledge issues without leaving your workflow.
 
 ![macOS](https://img.shields.io/badge/macOS-Sequoia-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
-![SwiftUI](https://img.shields.io/badge/SwiftUI-WidgetKit-green)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+<!-- TODO: Add screenshot -->
+<!-- ![Menu Bar Preview](docs/images/menubar-preview.png) -->
+
+## Why Use This?
+
+- **Glanceable status** – Problem count + severity color always visible in menu bar
+- **Desktop widget** – AI summaries of active issues (Ollama, OpenAI, or Claude)
+- **Acknowledge from anywhere** – Right-click problems to ack without opening Zabbix
+- **8 languages** – English, Spanish, French, German, Chinese, Japanese, Latvian, Russian
 
 ## Features
 
@@ -68,14 +80,23 @@ The menu bar icon shows the current problem count, color-coded by severity:
 - Blue: Information (severity 1)
 - Green: No active problems
 
+## Quick Start
+
+1. Download the [latest release](https://github.com/jacks4ever/macOS-Zabbix-Monitor/releases)
+2. Move `Zabbix Monitor.app` to `/Applications`
+3. Launch and enter your Zabbix server URL (e.g., `https://zabbix.example.com/api_jsonrpc.php`)
+4. Login with your Zabbix credentials
+5. (Optional) Right-click desktop → Edit Widgets → Add "Zabbix Monitor"
+
 ## Requirements
 
 - macOS Sequoia or later
-- Xcode 15+
 - A Zabbix server with API access (Zabbix 6.4+ recommended)
 - (Optional) AI provider for summaries: Ollama (local), OpenAI, or Anthropic
 
-## Installation
+## Building from Source
+
+If you prefer to build from source:
 
 1. Clone the repository:
    ```bash
@@ -91,6 +112,8 @@ The menu bar icon shows the current problem count, color-coded by severity:
 3. Build and run (`Cmd+R`)
 
 4. Configure via the menu bar app's Settings
+
+**Requirements for building:** Xcode 15+
 
 ## Configuration
 
@@ -148,14 +171,32 @@ All settings are configurable through the app's Settings panel (accessible via t
 - Uses App Groups with Team ID prefix format required by macOS Sequoia
 - Data stored in `~/Library/Group Containers/[TeamID].com.zabbixmenubar/`
 
+## Troubleshooting
+
+**"Connection failed" with self-signed certificate**
+→ Settings → Security → Enable "Allow Self-Signed Certificates"
+
+**Widget not appearing in gallery**
+→ Ensure app is in `/Applications`, not Downloads. Log out and back in.
+
+**Stale data in widget**
+→ Remove widget, log out/in, re-add widget (macOS caches widget UI aggressively)
+
+**API authentication errors**
+→ Ensure your Zabbix user has API access permissions. Zabbix 6.4+ uses Bearer token authentication.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
 ## Disclaimer
 
 This project is an independent, unofficial application and is not affiliated with, endorsed by, or connected to Zabbix SIA or the Zabbix project in any way. "Zabbix" is a registered trademark of Zabbix SIA. This application is a third-party tool that interfaces with the Zabbix API for personal monitoring purposes.
 
 ## License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-Made with love in Colorado, USA
+Made with ❤️ in Colorado, USA
