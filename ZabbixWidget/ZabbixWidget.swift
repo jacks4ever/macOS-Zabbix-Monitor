@@ -328,15 +328,14 @@ struct ZabbixWidgetEntryView: View {
                     // Has problems - show AI summary if available, then problem list
                     if !entry.aiSummary.isEmpty {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("AI Analysis")
+                            Text("AI Summary")
                                 .font(.caption2)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.secondary)
 
                             Text(entry.aiSummary)
                                 .font(.caption)
-                                .lineLimit(3)
-                                .minimumScaleFactor(0.8)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
 
                         Divider()
