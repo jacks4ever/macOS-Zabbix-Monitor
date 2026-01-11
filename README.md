@@ -8,8 +8,7 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-<!-- TODO: Add screenshot -->
-<!-- ![Menu Bar Preview](docs/images/menubar-preview.png) -->
+![Problems View](ZabbixMonitorScreenshots/zabbix-problems-menubar-ui-view.png)
 
 ## Why Use This?
 
@@ -39,11 +38,23 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 - **Problem Badges**: Click on problem count badges to see detailed error information
 - **Flexible Sorting**: Sort hosts alphabetically or by problem severity (bidirectional)
 
+![Hosts View](ZabbixMonitorScreenshots/zabbix-hosts-menubar-ui-view.png)
+
+*Right-click any host to assign a custom icon:*
+
+![Custom Host Icon](ZabbixMonitorScreenshots/zabbix-hosts-add-user-icon-context.png)
+
 ### Desktop Widget
 - **Multiple Sizes**: Small, Medium, and Large widget options
 - **AI Summaries**: Generate concise problem summaries using your choice of AI provider
 - **Problem List**: Shows top problems with severity icons when AI is disabled
 - **Real-time Updates**: Syncs with menu bar app via App Groups
+
+![Widget with AI Summary](ZabbixMonitorScreenshots/zabbix-white-card-summary.png)
+
+*Medium widget in light mode:*
+
+![Medium Widget Light Mode](ZabbixMonitorScreenshots/zabbix-medium-widget-light-mode.png)
 
 ### AI Integration
 - **Multiple Providers**:
@@ -52,7 +63,10 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
   - Anthropic (Claude models)
   - Disable AI (shows raw problems instead)
 - **Configurable Models**: Choose your preferred model for each provider
+- **Custom Prompts**: Customize the AI prompt with placeholders for problem data
 - **Test Connection**: Verify AI provider connectivity from Settings
+
+![AI Settings with Custom Prompt](ZabbixMonitorScreenshots/zabbix-settings-ai-prompt-view.png)
 
 ### Filtering & Customization
 - **Severity Filtering**: Independent filters for menu bar and widget
@@ -70,7 +84,9 @@ Stop switching to browser tabs to check your Zabbix alerts. Get real-time proble
 - **Language Selection**: Choose your preferred language in Settings
 - **Full UI Translation**: All menus, settings, severity labels, and widget text are localized
 
-## Screenshots
+![About View](ZabbixMonitorScreenshots/zabbix-about-menubar-ui-view.png)
+
+## Severity Colors
 
 The menu bar icon shows the current problem count, color-coded by severity:
 
@@ -160,6 +176,8 @@ All settings are configurable through the app's Settings panel (accessible via t
 2. Select "Edit Widgets..."
 3. Search for "Zabbix"
 4. Drag the widget to your desktop (available in Small, Medium, and Large sizes)
+
+![Widget Gallery](ZabbixMonitorScreenshots/zabbix-widget-gallery-view.png)
 
 ## Technical Notes
 
