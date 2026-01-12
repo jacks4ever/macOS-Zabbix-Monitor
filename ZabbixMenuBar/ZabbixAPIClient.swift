@@ -791,7 +791,10 @@ class ZabbixAPIClient: ObservableObject {
             }
         } else {
             // Still save data to update timestamp, but use existing AI summary
-            let unacknowledgedCount = problems.filter { !$0.isAcknowledged }.count
+            // Count only unacknowledged problems that match the widget severity filter
+            let unacknowledgedCount = problems.filter { problem in
+                !problem.isAcknowledged && widgetSeverityFilter.includes(severity: Int(problem.severity) ?? 0)
+            }.count
             let sharedData = SharedZabbixData(
                 problems: Array(sharedProblems),
                 totalProblemCount: unacknowledgedCount,
@@ -821,7 +824,10 @@ class ZabbixAPIClient: ObservableObject {
         // If AI is disabled, clear the summary so widget shows raw problems
         if aiProvider == .disabled {
             aiSummary = ""
-            let unacknowledgedCount = self.problems.filter { !$0.isAcknowledged }.count
+            // Count only unacknowledged problems that match the widget severity filter
+            let unacknowledgedCount = self.problems.filter { problem in
+                !problem.isAcknowledged && widgetSeverityFilter.includes(severity: Int(problem.severity) ?? 0)
+            }.count
             let sharedData = SharedZabbixData(
                 problems: Array(sharedProblems),
                 totalProblemCount: unacknowledgedCount,
@@ -885,7 +891,10 @@ class ZabbixAPIClient: ObservableObject {
         }
 
         // Always save shared data (with or without AI summary)
-        let unacknowledgedCount = self.problems.filter { !$0.isAcknowledged }.count
+        // Count only unacknowledged problems that match the widget severity filter
+        let unacknowledgedCount = self.problems.filter { problem in
+            !problem.isAcknowledged && widgetSeverityFilter.includes(severity: Int(problem.severity) ?? 0)
+        }.count
         let sharedData = SharedZabbixData(
             problems: Array(sharedProblems),
             totalProblemCount: unacknowledgedCount,
