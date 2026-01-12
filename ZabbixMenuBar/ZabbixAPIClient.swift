@@ -476,7 +476,17 @@ class ZabbixAPIClient: ObservableObject {
         openAIModel = UserDefaults.standard.string(forKey: "openai_model") ?? "gpt-4o-mini"
         anthropicAPIKey = UserDefaults.standard.string(forKey: "anthropic_api_key") ?? ""
         anthropicModel = UserDefaults.standard.string(forKey: "anthropic_model") ?? "claude-3-5-haiku-latest"
-        customAIPrompt = UserDefaults.standard.string(forKey: "custom_ai_prompt") ?? ZabbixAPIClient.defaultAIPrompt
+
+        // Load custom AI prompt and migrate old prompts that don't have placeholders
+        let savedPrompt = UserDefaults.standard.string(forKey: "custom_ai_prompt") ?? ZabbixAPIClient.defaultAIPrompt
+        if !savedPrompt.contains("{PROBLEM_LIST}") {
+            // Old prompt format without placeholders - use current default
+            customAIPrompt = ZabbixAPIClient.defaultAIPrompt
+            UserDefaults.standard.set(ZabbixAPIClient.defaultAIPrompt, forKey: "custom_ai_prompt")
+        } else {
+            customAIPrompt = savedPrompt
+        }
+
         widgetProblemCount = savedProblemCount > 0 ? savedProblemCount : 6
 
         setupSession()
@@ -758,9 +768,13 @@ class ZabbixAPIClient: ObservableObject {
     }
 
     private func saveDataForWidget() {
-        // Send all problems to widget, take top 20 for widget display
-        // Widget will filter based on its own severity filter settings
-        let sharedProblems = problems.prefix(20).map { problem in
+        // Filter problems by widget severity filter
+        let filteredProblems = problems.filter { problem in
+            widgetSeverityFilter.includes(severity: Int(problem.severity) ?? 0)
+        }
+
+        // Convert to shared problems format
+        let sharedProblems = filteredProblems.map { problem in
             SharedProblem(
                 eventid: problem.eventid,
                 name: problem.name,
@@ -768,11 +782,6 @@ class ZabbixAPIClient: ObservableObject {
                 timestamp: problem.timestamp,
                 isAcknowledged: problem.isAcknowledged
             )
-        }
-
-        // Filter problems by widget severity filter for AI summary
-        let filteredProblems = sharedProblems.filter { problem in
-            widgetSeverityFilter.includes(severity: problem.severity)
         }
 
         // Create a signature from unique problem names + filter settings to detect new problems
@@ -787,14 +796,12 @@ class ZabbixAPIClient: ObservableObject {
             lastProblemSignature = currentSignature
 
             Task {
-                await generateAISummary(for: Array(filteredProblems))
+                await generateAISummary(for: Array(sharedProblems))
             }
         } else {
             // Still save data to update timestamp, but use existing AI summary
-            // Count only unacknowledged problems that match the widget severity filter
-            let unacknowledgedCount = problems.filter { problem in
-                !problem.isAcknowledged && widgetSeverityFilter.includes(severity: Int(problem.severity) ?? 0)
-            }.count
+            // Count only unacknowledged problems from the filtered set
+            let unacknowledgedCount = sharedProblems.filter { !$0.isAcknowledged }.count
             let sharedData = SharedZabbixData(
                 problems: Array(sharedProblems),
                 totalProblemCount: unacknowledgedCount,
@@ -810,24 +817,14 @@ class ZabbixAPIClient: ObservableObject {
     }
 
     private func generateAISummary(for problems: [SharedProblem]) async {
-        // Get all problems for widget (top 20)
-        let sharedProblems = self.problems.prefix(20).map { problem in
-            SharedProblem(
-                eventid: problem.eventid,
-                name: problem.name,
-                severity: Int(problem.severity) ?? 0,
-                timestamp: problem.timestamp,
-                isAcknowledged: problem.isAcknowledged
-            )
-        }
+        // Use the filtered problems passed in (already filtered by widget severity)
+        let sharedProblems = problems
 
         // If AI is disabled, clear the summary so widget shows raw problems
         if aiProvider == .disabled {
             aiSummary = ""
             // Count only unacknowledged problems that match the widget severity filter
-            let unacknowledgedCount = self.problems.filter { problem in
-                !problem.isAcknowledged && widgetSeverityFilter.includes(severity: Int(problem.severity) ?? 0)
-            }.count
+            let unacknowledgedCount = sharedProblems.filter { !$0.isAcknowledged }.count
             let sharedData = SharedZabbixData(
                 problems: Array(sharedProblems),
                 totalProblemCount: unacknowledgedCount,
@@ -891,10 +888,8 @@ class ZabbixAPIClient: ObservableObject {
         }
 
         // Always save shared data (with or without AI summary)
-        // Count only unacknowledged problems that match the widget severity filter
-        let unacknowledgedCount = self.problems.filter { problem in
-            !problem.isAcknowledged && widgetSeverityFilter.includes(severity: Int(problem.severity) ?? 0)
-        }.count
+        // Count only unacknowledged problems from the filtered set
+        let unacknowledgedCount = sharedProblems.filter { !$0.isAcknowledged }.count
         let sharedData = SharedZabbixData(
             problems: Array(sharedProblems),
             totalProblemCount: unacknowledgedCount,

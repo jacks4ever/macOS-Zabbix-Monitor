@@ -85,13 +85,16 @@ DispatchQueue.main.async {
 
 ## Build & Deploy
 
+**IMPORTANT**: The user builds the app in Xcode. Claude should NEVER attempt to build the app using xcodebuild or similar commands.
+
 1. Clean build: `Cmd+Shift+K`
 2. Build: `Cmd+B`
-3. Copy to Applications:
-   ```bash
-   cp -R ~/Library/Developer/Xcode/DerivedData/ZabbixMenuBar-*/Build/Products/Debug/"Zabbix Monitor.app" /Applications/
-   ```
-4. Launch: `open "/Applications/Zabbix Monitor.app"`
+3. The user will copy to Applications and launch manually
+
+**Exception**: When the user explicitly asks Claude to "copy the new build to /Applications and launch" or similar, Claude should use the following command:
+```bash
+cp -R ~/Library/Developer/Xcode/DerivedData/ZabbixMenuBar-*/Build/Products/Debug/"Zabbix Monitor.app" /Applications/ && open "/Applications/Zabbix Monitor.app"
+```
 
 ## Debugging Widget Issues
 
