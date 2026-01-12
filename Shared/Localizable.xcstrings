@@ -253,49 +253,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Analysiere diese Zabbix-Alarme und fasse gemeinsame Themen oder Muster zusammen. Halte die Antwort unter 370 Zeichen. Sei prägnant: maximal 2-3 kurze Sätze.\n\n{PROBLEM_LIST}\n\nSchweregrad-Aufschlüsselung: {SEVERITY_COUNTS}"
+            "value" : "Sie sind ein Zabbix-Analyst. Analysieren Sie ein Problem oder Probleme und fassen Sie zusammen, nicht aufzählen. Halten Sie eine Antwort unter 370 Zeichen insgesamt, ob es ein Problem oder viele Probleme sind. Sei prägnant: maximal 2-3 kurze Sätze.\n\n{PROBLEM_LIST}"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Analyze these Zabbix alerts and summarize common themes or patterns. Keep response under 370 characters total. Be concise: 2-3 short sentences maximum.\n\n{PROBLEM_LIST}\n\nSeverity breakdown: {SEVERITY_COUNTS}"
+            "value" : "You are a Zabbix analyst. Analyze a problem or problems and summarize, do not enumerate. Keep a response under 370 characters total, whether it is one or many problems. Be concise: 2-3 short sentences maximum.\n\n{PROBLEM_LIST}"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Analiza estas alertas de Zabbix y resume temas o patrones comunes. Mantén la respuesta en menos de 370 caracteres. Sé conciso: máximo 2-3 oraciones cortas.\n\n{PROBLEM_LIST}\n\nDesglose por severidad: {SEVERITY_COUNTS}"
+            "value" : "Eres un analista de Zabbix. Analiza un problema o problemas y resume, no enumeres. Mantén una respuesta en menos de 370 caracteres en total, ya sea uno o muchos problemas. Sé conciso: máximo 2-3 oraciones cortas.\n\n{PROBLEM_LIST}"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Analysez ces alertes Zabbix et résumez les thèmes ou modèles communs. Gardez la réponse sous 370 caractères. Soyez concis: 2-3 phrases courtes maximum.\n\n{PROBLEM_LIST}\n\nRépartition par sévérité: {SEVERITY_COUNTS}"
+            "value" : "Vous êtes un analyste Zabbix. Analysez un problème ou des problèmes et résumez, n'énumérez pas. Gardez une réponse sous 370 caractères au total, qu'il s'agisse d'un ou plusieurs problèmes. Soyez concis: 2-3 phrases courtes maximum.\n\n{PROBLEM_LIST}"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "これらのZabbixアラートを分析し、共通のテーマやパターンを要約してください。回答は370文字以内に。簡潔に: 最大2-3文の短い文章で。\n\n{PROBLEM_LIST}\n\n重大度の内訳: {SEVERITY_COUNTS}"
+            "value" : "あなたはZabbixアナリストです。問題または複数の問題を分析し、要約してください。列挙しないでください。1つの問題でも複数の問題でも、回答は370文字以内にしてください。簡潔に: 最大2-3文の短い文章で。\n\n{PROBLEM_LIST}"
           }
         },
         "lv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Analizējiet šos Zabbix brīdinājumus un apkopojiet kopīgas tēmas vai modeļus. Atbilde jābūt zem 370 rakstzīmēm. Esiet kodolīgi: maksimums 2-3 īsi teikumi.\n\n{PROBLEM_LIST}\n\nSmaguma sadalījums: {SEVERITY_COUNTS}"
+            "value" : "Jūs esat Zabbix analītiķis. Analizējiet problēmu vai problēmas un apkopojiet, neuzskaitiet. Saglabājiet atbildi zem 370 rakstzīmēm kopumā, neatkarīgi no tā, vai tā ir viena vai daudzas problēmas. Esiet kodolīgi: maksimums 2-3 īsi teikumi.\n\n{PROBLEM_LIST}"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Проанализируйте эти оповещения Zabbix и обобщите общие темы или закономерности. Ответ должен быть менее 370 символов. Будьте кратким: максимум 2-3 коротких предложения.\n\n{PROBLEM_LIST}\n\nРаспределение по критичности: {SEVERITY_COUNTS}"
+            "value" : "Вы аналитик Zabbix. Проанализируйте проблему или проблемы и обобщите, не перечисляйте. Держите ответ менее 370 символов в общей сложности, будь то одна или много проблем. Будьте кратким: максимум 2-3 коротких предложения.\n\n{PROBLEM_LIST}"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "分析这些Zabbix告警并总结共同主题或模式。回复保持在370个字符以内。简洁: 最多2-3个短句。\n\n{PROBLEM_LIST}\n\n严重程度分布: {SEVERITY_COUNTS}"
+            "value" : "您是Zabbix分析师。分析一个或多个问题并进行总结，不要枚举。无论是一个还是多个问题，回复都保持在370个字符以内。简洁: 最多2-3个短句。\n\n{PROBLEM_LIST}"
           }
         }
       }

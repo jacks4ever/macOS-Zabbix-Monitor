@@ -434,6 +434,7 @@ struct AISettingsView: View {
     @State private var testResult: String?
     @State private var testSuccess = false
     @State private var isTesting = false
+    @State private var customPromptText = ""
 
     /// Custom binding that defers writes to avoid "Publishing changes from within view updates"
     private var aiProviderBinding: Binding<AIProvider> {
@@ -627,7 +628,9 @@ struct AISettingsView: View {
                             SectionHeader(titleKey: "section.customPrompt", icon: "text.bubble")
                             Spacer()
                             Button {
-                                client.customAIPrompt = ZabbixAPIClient.defaultAIPrompt
+                                let defaultPrompt = ZabbixAPIClient.defaultAIPrompt
+                                customPromptText = defaultPrompt
+                                client.customAIPrompt = defaultPrompt
                             } label: {
                                 HStack(spacing: 4) {
                                     Image(systemName: "arrow.counterclockwise")
@@ -639,7 +642,7 @@ struct AISettingsView: View {
                             .controlSize(.small)
                         }
 
-                        TextEditor(text: $client.customAIPrompt)
+                        TextEditor(text: $customPromptText)
                             .font(.system(.caption2, design: .monospaced))
                             .frame(height: 80)
                             .padding(4)
@@ -648,6 +651,16 @@ struct AISettingsView: View {
                                 RoundedRectangle(cornerRadius: 8)
                                     .strokeBorder(.quaternary, lineWidth: 1)
                             )
+                            .onChange(of: customPromptText) { _, newValue in
+                                // Defer the write to avoid cursor position issues
+                                DispatchQueue.main.async {
+                                    client.customAIPrompt = newValue
+                                }
+                            }
+                            .onAppear {
+                                // Initialize local state from client
+                                customPromptText = client.customAIPrompt
+                            }
 
                         HStack(spacing: 6) {
                             Text("label.availablePlaceholders")

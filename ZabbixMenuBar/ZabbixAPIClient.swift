@@ -869,11 +869,20 @@ class ZabbixAPIClient: ObservableObject {
         // Send all problem names to the AI for theme detection
         let problemList = problemNames.enumerated().map { "\($0.offset + 1). \($0.element)" }.joined(separator: "\n")
 
-        // Build prompt from custom template with placeholder substitution
-        let prompt = customAIPrompt
-            .replacingOccurrences(of: "{PROBLEM_LIST}", with: problemList)
-            .replacingOccurrences(of: "{SEVERITY_COUNTS}", with: countSummary)
-            .replacingOccurrences(of: "{PROBLEM_COUNT}", with: "\(problems.count)")
+        // Build prompt: custom prompt + problem list + severity breakdown
+        // Support legacy prompts with placeholders, or append data for new prompts
+        var prompt = customAIPrompt
+
+        // Check if prompt uses old placeholder format
+        if prompt.contains("{PROBLEM_LIST}") {
+            prompt = prompt
+                .replacingOccurrences(of: "{PROBLEM_LIST}", with: problemList)
+                .replacingOccurrences(of: "{SEVERITY_COUNTS}", with: countSummary)
+                .replacingOccurrences(of: "{PROBLEM_COUNT}", with: "\(problems.count)")
+        } else {
+            // New format: append problem list and severity counts
+            prompt = "\(prompt)\n\n\(problemList)\n\nSeverity breakdown: \(countSummary)"
+        }
 
         do {
             let summary = try await callAIProvider(prompt: prompt)
