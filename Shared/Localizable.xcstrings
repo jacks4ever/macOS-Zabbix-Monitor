@@ -253,49 +253,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sie sind ein Zabbix-Analyst. Analysieren Sie ein Problem oder Probleme und fassen Sie zusammen, nicht aufzählen. Halten Sie eine Antwort unter 370 Zeichen insgesamt, ob es ein Problem oder viele Probleme sind. Sei prägnant: maximal 2-3 kurze Sätze.\n\n{PROBLEM_LIST}"
+            "value" : "Sie sind ein Zabbix-Analyst. Analysieren Sie diese Alarme und fassen Sie eine Antwort unter 300 Zeichen zusammen. Sei prägnant: maximal 2 kurze Sätze.\n\n{PROBLEM_LIST}"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You are a Zabbix analyst. Analyze a problem or problems and summarize, do not enumerate. Keep a response under 370 characters total, whether it is one or many problems. Be concise: 2-3 short sentences maximum.\n\n{PROBLEM_LIST}"
+            "value" : "You are a Zabbix analyst. Analyze these alerts and summarize a response under 300 characters total. Be concise: 2 short sentences maximum.\n\n{PROBLEM_LIST}"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eres un analista de Zabbix. Analiza un problema o problemas y resume, no enumeres. Mantén una respuesta en menos de 370 caracteres en total, ya sea uno o muchos problemas. Sé conciso: máximo 2-3 oraciones cortas.\n\n{PROBLEM_LIST}"
+            "value" : "Eres un analista de Zabbix. Analiza estas alertas y resume una respuesta en menos de 300 caracteres. Sé conciso: máximo 2 oraciones cortas.\n\n{PROBLEM_LIST}"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous êtes un analyste Zabbix. Analysez un problème ou des problèmes et résumez, n'énumérez pas. Gardez une réponse sous 370 caractères au total, qu'il s'agisse d'un ou plusieurs problèmes. Soyez concis: 2-3 phrases courtes maximum.\n\n{PROBLEM_LIST}"
+            "value" : "Vous êtes un analyste Zabbix. Analysez ces alertes et résumez une réponse sous 300 caractères. Soyez concis: 2 phrases courtes maximum.\n\n{PROBLEM_LIST}"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "あなたはZabbixアナリストです。問題または複数の問題を分析し、要約してください。列挙しないでください。1つの問題でも複数の問題でも、回答は370文字以内にしてください。簡潔に: 最大2-3文の短い文章で。\n\n{PROBLEM_LIST}"
+            "value" : "あなたはZabbixアナリストです。これらのアラートを分析し、300文字以内で要約してください。簡潔に: 最大2文の短い文章で。\n\n{PROBLEM_LIST}"
           }
         },
         "lv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jūs esat Zabbix analītiķis. Analizējiet problēmu vai problēmas un apkopojiet, neuzskaitiet. Saglabājiet atbildi zem 370 rakstzīmēm kopumā, neatkarīgi no tā, vai tā ir viena vai daudzas problēmas. Esiet kodolīgi: maksimums 2-3 īsi teikumi.\n\n{PROBLEM_LIST}"
+            "value" : "Jūs esat Zabbix analītiķis. Analizējiet šos brīdinājumus un apkopojiet atbildi zem 300 rakstzīmēm. Esiet kodolīgi: maksimums 2 īsi teikumi.\n\n{PROBLEM_LIST}"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вы аналитик Zabbix. Проанализируйте проблему или проблемы и обобщите, не перечисляйте. Держите ответ менее 370 символов в общей сложности, будь то одна или много проблем. Будьте кратким: максимум 2-3 коротких предложения.\n\n{PROBLEM_LIST}"
+            "value" : "Вы аналитик Zabbix. Проанализируйте эти оповещения и обобщите ответ менее 300 символов. Будьте кратким: максимум 2 коротких предложения.\n\n{PROBLEM_LIST}"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "您是Zabbix分析师。分析一个或多个问题并进行总结，不要枚举。无论是一个还是多个问题，回复都保持在370个字符以内。简洁: 最多2-3个短句。\n\n{PROBLEM_LIST}"
+            "value" : "您是Zabbix分析师。分析这些告警并总结一个300个字符以内的回复。简洁: 最多2个短句。\n\n{PROBLEM_LIST}"
           }
         }
       }
@@ -5420,6 +5420,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "所有系统运行正常"
+          }
+        }
+      }
+    },
+    "widget.noProblemsDetected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Probleme erkannt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No problems detected"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se detectaron problemas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun problème détecté"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "問題は検出されませんでした"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nav atklātas problēmas"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проблем не обнаружено"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未检测到问题"
           }
         }
       }

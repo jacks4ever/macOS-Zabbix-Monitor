@@ -270,17 +270,15 @@ struct ZabbixWidgetEntryView: View {
                         }
                     }
                 }
-            } else if entry.isConfigured && !entry.aiSummary.isEmpty {
+            } else if entry.isConfigured && entry.problemCount == 0 {
+                // All clear state for medium widget - no AI Summary heading
                 Divider()
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("widget.aiSummary")
+                    Text("widget.allSystemsOperational")
                         .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.secondary)
-                    Text(verbatim: entry.aiSummary)
+                    Text("widget.noProblemsDetected")
                         .font(.caption2)
-                        .minimumScaleFactor(0.8)
                 }
             }
         }
@@ -340,14 +338,23 @@ struct ZabbixWidgetEntryView: View {
                 Spacer()
             } else {
                 if entry.problemCount == 0 {
-                    // No problems
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
+                    // No problems - show large green check mark badge
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 12) {
                             Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 80))
                                 .foregroundColor(.green)
-                            Text("widget.allSystemsOperational")
-                                .font(.body)
+                            VStack(spacing: 4) {
+                                Text("widget.allSystemsOperational")
+                                    .font(.headline)
+                                Text("widget.noProblemsDetected")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                        Spacer()
                     }
                     Spacer()
                 } else {
