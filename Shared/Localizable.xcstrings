@@ -200,49 +200,49 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version 1.1.1"
+            "value" : "Version 1.1.2"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version 1.1.1"
+            "value" : "Version 1.1.2"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version 1.1.1"
+            "value" : "Version 1.1.2"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version 1.1.1"
+            "value" : "Version 1.1.2"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バージョン 1.1.1"
+            "value" : "バージョン 1.1.2"
           }
         },
         "lv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Versija 1.1.1"
+            "value" : "Versija 1.1.2"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Версия 1.1.1"
+            "value" : "Версия 1.1.2"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "版本 1.1.1"
+            "value" : "版本 1.1.2"
           }
         }
       }
