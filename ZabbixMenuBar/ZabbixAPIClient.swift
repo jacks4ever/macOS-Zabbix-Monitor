@@ -363,7 +363,7 @@ class ZabbixAPIClient: ObservableObject {
     // Configuration - simple @Published without didSet
     @Published var serverURL: String = ""
     @Published var username: String = ""
-    @Published var refreshInterval: TimeInterval = 60
+    @Published var refreshInterval: TimeInterval = 300  // 5 minutes - better for battery
     @Published var allowSelfSignedCerts: Bool = true
     @Published var problemSortOrder: ProblemSortOrder = .criticality
     @Published var severityFilter: SeverityFilter = SeverityFilter()
@@ -452,7 +452,13 @@ class ZabbixAPIClient: ObservableObject {
         // Connection settings
         serverURL = UserDefaults.standard.string(forKey: "zabbix_server_url") ?? "https://192.168.46.183:2443/api_jsonrpc.php"
         username = UserDefaults.standard.string(forKey: "zabbix_username") ?? ""
-        refreshInterval = savedRefreshInterval == 0 ? 60 : savedRefreshInterval
+        // Default to 300 seconds (5 min) for better battery life
+        // Migrate users from old 60-second default to new 300-second default
+        if savedRefreshInterval == 0 || savedRefreshInterval == 60 {
+            refreshInterval = 300
+        } else {
+            refreshInterval = savedRefreshInterval
+        }
         allowSelfSignedCerts = UserDefaults.standard.object(forKey: "zabbix_allow_self_signed") as? Bool ?? true
         problemSortOrder = ProblemSortOrder(rawValue: savedSortOrder) ?? .criticality
 
@@ -626,7 +632,7 @@ class ZabbixAPIClient: ObservableObject {
             .sink { [weak self] value in
                 UserDefaults.standard.set(value, forKey: "widget_problem_count")
                 self?.saveDataForWidget()
-                WidgetCenter.shared.reloadAllTimelines()
+                // Note: Widget reload is now handled by saveDataForWidget() with change detection
             }
             .store(in: &cancellables)
     }
@@ -655,14 +661,16 @@ class ZabbixAPIClient: ObservableObject {
         refreshTimer = nil
         guard refreshInterval > 0 else { return }
 
-        // Create timer and add to common run loop mode for menu bar apps
+        // Create timer with .default mode for better energy efficiency
+        // Using .default instead of .common allows macOS to coalesce timers
+        // and throttle when the app is not actively in use, saving battery
         let timer = Timer(timeInterval: refreshInterval, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self = self, !self.pauseRefresh else { return }
                 await self.refreshData()
             }
         }
-        RunLoop.main.add(timer, forMode: .common)
+        RunLoop.main.add(timer, forMode: .default)
         refreshTimer = timer
     }
 

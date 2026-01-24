@@ -34,10 +34,10 @@ struct ZabbixProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<ZabbixEntry>) -> Void) {
         let entry = loadEntry()
 
-        // Refresh every 1 minute to stay in sync with the menu bar app
-        // Note: macOS may throttle this to save battery, but the app also triggers
-        // reloadAllTimelines() when data changes for immediate updates
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
+        // Refresh every 5 minutes to reduce battery usage
+        // The menu bar app triggers reloadAllTimelines() when data changes,
+        // so the widget will still update promptly when problems change
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
     }

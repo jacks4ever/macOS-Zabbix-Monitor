@@ -129,6 +129,9 @@ class SharedDataManager {
 
     private init() {}
 
+    /// Track last saved data signature to avoid redundant widget reloads
+    private var lastSavedSignature: String = ""
+
     func saveData(_ data: SharedZabbixData) {
         guard let defaults = sharedDefaults else { return }
 
@@ -136,13 +139,22 @@ class SharedDataManager {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .secondsSince1970
             let encoded = try encoder.encode(data)
-            defaults.set(encoded, forKey: userDefaultsKey)
-            defaults.synchronize()
 
-            // Reload widget timeline on main thread
+            // Create a signature from problem IDs, AI summary, and display settings to detect real changes
+            let problemIds = data.problems.map { $0.eventid }.sorted().joined()
+            let signature = "\(problemIds)|\(data.aiSummary)|\(data.totalProblemCount)|\(data.widgetProblemCount)"
+
+            defaults.set(encoded, forKey: userDefaultsKey)
+            // Note: synchronize() removed - macOS handles flushing automatically
+            // This avoids synchronous disk I/O on every save, improving battery life
+
+            // Only reload widget if data actually changed
             #if canImport(WidgetKit)
-            DispatchQueue.main.async {
-                WidgetCenter.shared.reloadAllTimelines()
+            if signature != lastSavedSignature {
+                lastSavedSignature = signature
+                DispatchQueue.main.async {
+                    WidgetCenter.shared.reloadAllTimelines()
+                }
             }
             #endif
         } catch {
