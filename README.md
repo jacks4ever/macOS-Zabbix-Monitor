@@ -4,6 +4,7 @@
 
 Stop switching to browser tabs to check your Zabbix alerts. Get real-time problem counts in your menu bar, AI-powered summaries in a desktop widget, and acknowledge issues without leaving your workflow.
 
+![Version](https://img.shields.io/badge/Version-1.1.2-brightgreen)
 ![macOS](https://img.shields.io/badge/macOS-Sequoia-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
